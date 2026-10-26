@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة الانتظار والمواعيد - مستشفى الملك فيصل</title>
+    <title>لوحة الاستقبال - مستشفى الملك فيصل</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts (Cairo & Tajawal) -->
@@ -54,19 +54,12 @@
         .emerald-card-shadow {
             box-shadow: 0 12px 35px -8px rgba(0, 108, 53, 0.12);
         }
-        .call-flash {
-            animation: flashGolden 1s ease-in-out 3;
-        }
-        @keyframes flashGolden {
-            0%, 100% { background-color: rgba(255, 255, 255, 0.98); }
-            50% { background-color: rgba(243, 229, 171, 0.7); }
-        }
     </style>
 </head>
 <body class="saudi-pattern-bg text-slate-800 flex flex-col min-h-screen">
 
     <!-- Top Saudi Royal Bar -->
-    <div id="top-royal-bar" class="bg-saudi-darkGreen py-1.5 px-4 text-xs font-semibold text-saudi-lightGold border-b border-saudi-gold/30">
+    <div class="bg-saudi-darkGreen py-1.5 px-4 text-xs font-semibold text-saudi-lightGold border-b border-saudi-gold/30">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-2 font-bold">
                 <svg class="w-5 h-5 fill-saudi-gold shrink-0" viewBox="0 0 100 100">
@@ -99,20 +92,15 @@
                     </div>
                     <div>
                         <h1 class="text-xl sm:text-2xl font-black text-white tracking-wide font-tajawal">مستشفى الملك فيصل</h1>
+                        <p class="text-xs text-saudi-lightGold">لوحة تحكم الاستقبال</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <div id="nav-tabs-container" class="bg-saudi-darkGreen p-1 rounded-2xl flex items-center gap-1 border border-saudi-gold/40 shadow-inner">
-                        <button onclick="switchView('reception')" id="btn-tab-reception" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow">
-                            <i class="fa-solid fa-user-gear"></i>
-                            <span>الاستقبال</span>
-                        </button>
-                        <button onclick="switchView('display')" id="btn-tab-display" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-1.5">
-                            <i class="fa-solid fa-tv"></i>
-                            <span>الشاشة</span>
-                        </button>
-                    </div>
+                    <a href="display.html" target="_blank" class="bg-saudi-gold hover:bg-amber-400 text-saudi-darkGreen px-4 py-2.5 rounded-xl text-xs font-black shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-tv"></i>
+                        <span>فتح شاشة الصالة (عرض)</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -128,7 +116,7 @@
             </div>
         </div>
 
-        <!-- =================VIEW 1: RECEPTION CONTROL PANEL================ -->
+        <!-- =================RECEPTION CONTROL PANEL================ -->
         <section id="view-reception" class="block space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -290,75 +278,7 @@
             </div>
         </section>
 
-        <!-- =================VIEW 2: LOUNGE DISPLAY SCREEN================ -->
-        <section id="view-display" class="hidden space-y-6">
-
-            <div class="bg-saudi-darkGreen text-white p-5 sm:p-6 rounded-3xl border-2 border-saudi-gold/60 shadow-xl flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl bg-saudi-emerald border border-saudi-gold flex items-center justify-center p-2 text-saudi-gold shadow shrink-0">
-                        <svg class="w-full h-full fill-saudi-gold" viewBox="0 0 100 100">
-                            <path d="M50,15 C52,25 58,32 68,36 C58,38 53,42 52,50 C48,50 43,42 33,36 C43,32 48,25 50,15 Z" />
-                            <path d="M47,48 L53,48 L53,82 L47,82 Z" />
-                            <path d="M20,78 Q50,70 80,55 L75,50 Q48,64 22,70 Z" />
-                            <path d="M80,78 Q50,70 20,55 L25,50 Q52,64 78,70 Z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-black text-white font-tajawal">مستشفى الملك فيصل</h2>
-                        <p class="text-xs text-saudi-lightGold font-semibold">صالة الانتظار الرئيسية</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleFullScreen()" class="bg-saudi-emerald hover:bg-saudi-green text-saudi-lightGold border border-saudi-gold/60 px-4 py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 shadow">
-                        <i class="fa-solid fa-expand text-saudi-gold"></i>
-                        <span>تكبير الشاشة</span>
-                    </button>
-                    <button type="button" onclick="switchView('reception')" class="bg-saudi-gold hover:bg-amber-400 text-saudi-darkGreen px-4 py-2.5 rounded-xl text-xs font-black shadow transition flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-right"></i>
-                        <span>العودة للاستقبال</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="max-w-5xl mx-auto space-y-8">
-                <div id="lounge-card-container" class="bg-white rounded-3xl p-8 sm:p-12 border-4 border-saudi-emerald shadow-2xl text-center relative overflow-hidden transition-all duration-300">
-                    <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-saudi-gold via-saudi-green to-saudi-gold"></div>
-                    
-                    <div class="text-slate-600 font-black text-2xl sm:text-4xl mb-2 flex items-center justify-center gap-3">
-                        <i class="fa-solid fa-bell text-saudi-gold animate-bounce"></i>
-                        <span>الرقم الحالي المخدوم</span>
-                    </div>
-
-                    <div id="display-current-num" class="text-8xl sm:text-[13rem] leading-none font-black text-saudi-green tracking-tight my-6 py-10 bg-saudi-sand/90 rounded-3xl border-2 border-saudi-gold/40 shadow-inner">
-                        ---
-                    </div>
-
-                    <div class="bg-saudi-emerald text-saudi-lightGold p-4 sm:p-5 rounded-2xl border border-saudi-gold/50 text-xl sm:text-3xl font-black shadow-md flex items-center justify-center gap-3 max-w-2xl mx-auto">
-                        <i class="fa-solid fa-stethoscope text-saudi-gold text-2xl"></i>
-                        <span>الرجاء التوجه للعيادة</span>
-                    </div>
-                </div>
-
-                <div class="bg-saudi-emerald text-white rounded-3xl p-6 sm:p-8 border-2 border-saudi-gold/50 shadow-xl">
-                    <div class="flex items-center justify-between border-b border-saudi-gold/30 pb-4 mb-6">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-saudi-gold text-saudi-darkGreen flex items-center justify-center font-black text-lg">
-                                <i class="fa-solid fa-list-ol"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-black text-saudi-lightGold text-xl">الأرقام التالية بالانتظار</h3>
-                                <p class="text-xs text-white/70">الرجاء الاستعداد</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="display-upcoming-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- =================VIEW 3: PATIENT SELF TICKET BOOKING VIEW================ -->
+        <!-- =================PATIENT SELF TICKET BOOKING PORTAL================ -->
         <section id="view-patient-portal" class="hidden max-w-md mx-auto py-8">
             <div class="bg-white rounded-3xl p-8 border-2 border-saudi-gold/40 emerald-card-shadow text-center space-y-6">
                 <div class="w-16 h-16 rounded-2xl bg-saudi-green/10 text-saudi-green flex items-center justify-center font-bold border border-saudi-green/20 mx-auto">
@@ -383,7 +303,6 @@
                         </div>
                     </div>
 
-                    <!-- Real-time Turn Status Message for Patient -->
                     <div id="portal-status-alert" class="p-3 rounded-xl bg-white border border-saudi-gold/40 text-xs font-bold text-slate-700">
                         جاري احتساب حالتك...
                     </div>
@@ -471,10 +390,6 @@
                         isRemoteUpdate = true;
                         state = cloudData.state;
                         renderApp();
-                        if (cloudData.shouldAnnounce) {
-                            playChime();
-                            flashLoungeDisplay();
-                        }
                         isRemoteUpdate = false;
                     }
                 }
@@ -487,10 +402,6 @@
                 if (event.data && event.data.type === 'STATE_UPDATE' && !isRemoteUpdate) {
                     state = event.data.state;
                     renderApp();
-                    if (event.data.shouldAnnounce) {
-                        playChime();
-                        flashLoungeDisplay();
-                    }
                 }
             };
         }
@@ -514,18 +425,15 @@
 
         function renderApp() {
             const currentNumEl = document.getElementById('reception-current-num');
-            const displayNumEl = document.getElementById('display-current-num');
             const portalCurrentNumEl = document.getElementById('portal-current-num');
             const waitingCountEl = document.getElementById('stat-waiting-count');
             const servedCountEl = document.getElementById('stat-served-count');
             const queueTableBody = document.getElementById('queue-table-body');
             const queueCounterEl = document.getElementById('queue-list-counter');
             const emptyMsgEl = document.getElementById('empty-queue-msg');
-            const upcomingListEl = document.getElementById('display-upcoming-list');
 
             const currentStr = state.current ? String(state.current.id).padStart(3, '0') : '---';
             if (currentNumEl) currentNumEl.textContent = currentStr;
-            if (displayNumEl) displayNumEl.textContent = currentStr;
             if (portalCurrentNumEl) portalCurrentNumEl.textContent = currentStr;
 
             if (myActiveTicketId) {
@@ -540,7 +448,6 @@
                     } else if (myActiveTicketId < currentId) {
                         statusAlertEl.innerHTML = `<span class="text-slate-500">تمت خدمة رقمك أو تجاوزه.</span>`;
                     } else {
-                        // Find position in queue
                         const indexInQueue = state.queue.findIndex(p => p.id === myActiveTicketId);
                         if (indexInQueue !== -1) {
                             const peopleAhead = indexInQueue + 1;
@@ -583,73 +490,30 @@
                     });
                 }
             }
-
-            if (upcomingListEl) {
-                upcomingListEl.innerHTML = '';
-                if (state.queue.length === 0) {
-                    upcomingListEl.innerHTML = `<div class="col-span-full text-center py-4 text-saudi-lightGold/60 font-bold text-sm">لا توجد أرقام منتظرة حالياً</div>`;
-                } else {
-                    state.queue.slice(0, 4).forEach((patient) => {
-                        const card = document.createElement('div');
-                        card.className = "bg-saudi-darkGreen p-4 rounded-2xl border border-saudi-gold/40 text-center shadow";
-                        card.innerHTML = `
-                            <span class="text-xs text-saudi-lightGold block font-bold mb-1">رقم الانتظار</span>
-                            <span class="text-3xl font-black text-white">${String(patient.id).padStart(3, '0')}</span>
-                            <span class="text-[11px] text-white/70 block mt-1 truncate">${patient.name || 'مراجع'}</span>
-                        `;
-                        upcomingListEl.appendChild(card);
-                    });
-                }
-            }
         }
 
-        // Extremely clear and loud professional chime sound using browser AudioContext
         function playChime() {
             const toggle = document.getElementById('audio-toggle');
             if (toggle && !toggle.checked) return;
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 const ctx = new AudioContext();
-                
-                // Clear 3-tone chime sequence (High definition bell)
-                const freqs = [659.25, 880, 1318.51]; // E5, A5, E6
+                const freqs = [659.25, 880, 1318.51];
                 freqs.forEach((freq, idx) => {
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
-                    
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.15));
-                    
                     gain.gain.setValueAtTime(0, ctx.currentTime + (idx * 0.15));
                     gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + (idx * 0.15) + 0.03);
                     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (idx * 0.15) + 0.7);
-                    
                     osc.connect(gain);
                     gain.connect(ctx.destination);
-                    
                     osc.start(ctx.currentTime + (idx * 0.15));
                     osc.stop(ctx.currentTime + (idx * 0.15) + 0.7);
                 });
             } catch (e) {}
         }
-
-        function flashLoungeDisplay() {
-            const loungeCard = document.getElementById('lounge-card-container');
-            if (loungeCard) {
-                loungeCard.classList.add('call-flash');
-                setTimeout(() => loungeCard.classList.remove('call-flash'), 3000);
-            }
-        }
-
-        window.toggleFullScreen = function() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
-        };
 
         window.handleAddPatient = function(e) {
             if (e) e.preventDefault();
@@ -682,9 +546,7 @@
 
             state.queue.push(newPatient);
             myActiveTicketId = newPatient.id;
-            try {
-                localStorage.setItem('kfh_my_ticket', myActiveTicketId);
-            } catch(err) {}
+            try { localStorage.setItem('kfh_my_ticket', myActiveTicketId); } catch(err) {}
 
             syncState(false);
 
@@ -708,13 +570,10 @@
                 alert("لا يوجد مراجعين في قائمة الانتظار حالياً.");
                 return;
             }
-
             const nextPatient = state.queue.shift();
             state.current = { id: nextPatient.id };
             state.servedCount++;
-
             playChime();
-            flashLoungeDisplay();
             syncState(true);
         };
 
@@ -724,7 +583,6 @@
                 return;
             }
             playChime();
-            flashLoungeDisplay();
             syncState(true);
         };
 
@@ -755,49 +613,15 @@
             playChime();
         };
 
-        window.switchView = function(viewName) {
-            const receptionSec = document.getElementById('view-reception');
-            const displaySec = document.getElementById('view-display');
-            const portalSec = document.getElementById('view-patient-portal');
-            const btnRec = document.getElementById('btn-tab-reception');
-            const btnDisp = document.getElementById('btn-tab-display');
-
-            if (!receptionSec || !displaySec || !portalSec) return;
-
-            receptionSec.classList.add('hidden');
-            displaySec.classList.add('hidden');
-            portalSec.classList.add('hidden');
-
-            if (viewName === 'reception') {
-                receptionSec.classList.remove('hidden');
-                if (btnRec && btnDisp) {
-                    btnRec.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow";
-                    btnDisp.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-1.5";
-                }
-            } else if (viewName === 'display') {
-                displaySec.classList.remove('hidden');
-                if (btnRec && btnDisp) {
-                    btnDisp.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow";
-                    btnRec.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-1.5";
-                }
-            } else if (viewName === 'portal') {
-                portalSec.classList.remove('hidden');
-                const tabsContainer = document.getElementById('nav-tabs-container');
-                if (tabsContainer) tabsContainer.style.display = 'none';
-                
-                // If user already has a saved ticket, show success box directly
-                if (myActiveTicketId) {
-                    document.getElementById('patient-portal-form').classList.add('hidden');
-                    const successBox = document.getElementById('ticket-success-box');
-                    successBox.classList.remove('hidden');
-                    document.getElementById('my-ticket-number').textContent = String(myActiveTicketId).padStart(3, '0');
-                }
-            }
-        };
-
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('mode') === 'portal' || window.location.hash === '#portal') {
-            switchView('portal');
+            document.getElementById('view-reception').classList.add('hidden');
+            document.getElementById('view-patient-portal').classList.remove('hidden');
+            if (myActiveTicketId) {
+                document.getElementById('patient-portal-form').classList.add('hidden');
+                document.getElementById('ticket-success-box').classList.remove('hidden');
+                document.getElementById('my-ticket-number').textContent = String(myActiveTicketId).padStart(3, '0');
+            }
         }
 
         try {
