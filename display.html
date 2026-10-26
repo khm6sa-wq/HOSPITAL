@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شاشة الانتظار الرئيسية - مستشفى الملك فيصل</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Cairo & Tajawal) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        saudi: {
+                            green: '#006C35',
+                            darkGreen: '#004B25',
+                            emerald: '#0B4B28',
+                            lightGreen: '#008743',
+                            gold: '#D4AF37',
+                            lightGold: '#F3E5AB',
+                            darkGold: '#A38128',
+                            sand: '#FBF9F5',
+                            cardBg: '#FFFFFF',
+                            slate: '#1E293B'
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'Tajawal', 'sans-serif'],
+                        tajawal: ['Tajawal', 'Cairo', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Tajawal', 'Cairo', sans-serif;
+            background-color: #F8F6F0;
+            min-height: 100vh;
+        }
+        .saudi-pattern-bg {
+            background-color: #F8F6F0;
+            background-image: radial-gradient(#006C35 0.75px, transparent 0.75px), radial-gradient(#D4AF37 0.75px, #F8F6F0 0.75px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+        .call-flash {
+            animation: flashGolden 1s ease-in-out 3;
+        }
+        @keyframes flashGolden {
+            0%, 100% { background-color: rgba(255, 255, 255, 0.98); }
+            50% { background-color: rgba(243, 229, 171, 0.7); }
+        }
+    </style>
+</head>
+<body class="saudi-pattern-bg text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Top Saudi Royal Bar -->
+    <div class="bg-saudi-darkGreen py-1.5 px-4 text-xs font-semibold text-saudi-lightGold border-b border-saudi-gold/30">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2 font-bold">
+                <svg class="w-5 h-5 fill-saudi-gold shrink-0" viewBox="0 0 100 100">
+                    <path d="M50,15 C52,25 58,32 68,36 C58,38 53,42 52,50 C48,50 43,42 33,36 C43,32 48,25 50,15 Z" />
+                    <path d="M47,48 L53,48 L53,82 L47,82 Z" />
+                    <path d="M20,78 Q50,70 80,55 L75,50 Q48,64 22,70 Z" />
+                    <path d="M80,78 Q50,70 20,55 L25,50 Q52,64 78,70 Z" />
+                </svg>
+                <span>المملكة العربية السعودية - وزارة الصحة</span>
+            </div>
+            <div class="flex items-center gap-2 font-bold text-saudi-gold">
+                <i class="fa-solid fa-gem text-[10px]"></i>
+                <span>رؤية 2030</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Display Screen Content -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <div class="bg-saudi-darkGreen text-white p-5 sm:p-6 rounded-3xl border-2 border-saudi-gold/60 shadow-xl flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-saudi-emerald border border-saudi-gold flex items-center justify-center p-2 text-saudi-gold shadow shrink-0">
+                    <svg class="w-full h-full fill-saudi-gold" viewBox="0 0 100 100">
+                        <path d="M50,15 C52,25 58,32 68,36 C58,38 53,42 52,50 C48,50 43,42 33,36 C43,32 48,25 50,15 Z" />
+                        <path d="M47,48 L53,48 L53,82 L47,82 Z" />
+                        <path d="M20,78 Q50,70 80,55 L75,50 Q48,64 22,70 Z" />
+                        <path d="M80,78 Q50,70 20,55 L25,50 Q52,64 78,70 Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-white font-tajawal">مستشفى الملك فيصل</h2>
+                    <p class="text-xs text-saudi-lightGold font-semibold">صالة الانتظار الرئيسية</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="toggleFullScreen()" class="bg-saudi-emerald hover:bg-saudi-green text-saudi-lightGold border border-saudi-gold/60 px-4 py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 shadow">
+                    <i class="fa-solid fa-expand text-saudi-gold"></i>
+                    <span>تكبير الشاشة</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="space-y-8">
+            <div id="lounge-card-container" class="bg-white rounded-3xl p-8 sm:p-12 border-4 border-saudi-emerald shadow-2xl text-center relative overflow-hidden transition-all duration-300">
+                <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-saudi-gold via-saudi-green to-saudi-gold"></div>
+                
+                <div class="text-slate-600 font-black text-2xl sm:text-4xl mb-2 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-bell text-saudi-gold animate-bounce"></i>
+                    <span>الرقم الحالي المخدوم</span>
+                </div>
+
+                <div id="display-current-num" class="text-8xl sm:text-[13rem] leading-none font-black text-saudi-green tracking-tight my-6 py-10 bg-saudi-sand/90 rounded-3xl border-2 border-saudi-gold/40 shadow-inner">
+                    ---
+                </div>
+
+                <div class="bg-saudi-emerald text-saudi-lightGold p-4 sm:p-5 rounded-2xl border border-saudi-gold/50 text-xl sm:text-3xl font-black shadow-md flex items-center justify-center gap-3 max-w-2xl mx-auto">
+                    <i class="fa-solid fa-stethoscope text-saudi-gold text-2xl"></i>
+                    <span>الرجاء التوجه للعيادة</span>
+                </div>
+            </div>
+
+            <div class="bg-saudi-emerald text-white rounded-3xl p-6 sm:p-8 border-2 border-saudi-gold/50 shadow-xl">
+                <div class="flex items-center justify-between border-b border-saudi-gold/30 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-saudi-gold text-saudi-darkGreen flex items-center justify-center font-black text-lg">
+                            <i class="fa-solid fa-list-ol"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-black text-saudi-lightGold text-xl">الأرقام التالية بالانتظار</h3>
+                            <p class="text-xs text-white/70">الرجاء الاستعداد</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="display-upcoming-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-saudi-darkGreen text-saudi-lightGold py-6 border-t border-saudi-gold/30 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs space-y-1">
+            <p class="font-bold">جميع الحقوق محفوظة © مستشفى الملك فيصل - المملكة العربية السعودية</p>
+        </div>
+    </footer>
+
+    <!-- Script Engine -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
+            authDomain: "hospital-ba989.firebaseapp.com",
+            projectId: "hospital-ba989",
+            storageBucket: "hospital-ba989.firebasestorage.app",
+            messagingSenderId: "30608387919",
+            appId: "1:30608387919:web:ee0f83efabc514e5ff1f3a",
+            measurementId: "G-6R34PWFVWK"
+        };
+
+        let state = {
+            queue: [],
+            current: null,
+            servedCount: 0
+        };
+
+        try {
+            const localSaved = localStorage.getItem('kfh_queue_state');
+            if (localSaved) {
+                const parsed = JSON.parse(localSaved);
+                if (parsed && parsed.state) state = parsed.state;
+            }
+        } catch (e) {}
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            signInAnonymously(auth).catch(() => {});
+
+            const docRef = doc(db, "queues", "hospital_main_queue");
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if (cloudData && cloudData.state) {
+                        state = cloudData.state;
+                        renderDisplay();
+                        if (cloudData.shouldAnnounce) {
+                            playChime();
+                            flashLoungeDisplay();
+                        }
+                    }
+                }
+            }, () => {});
+        } catch (e) {}
+
+        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
+        if (queueChannel) {
+            queueChannel.onmessage = (event) => {
+                if (event.data && event.data.type === 'STATE_UPDATE') {
+                    state = event.data.state;
+                    renderDisplay();
+                    if (event.data.shouldAnnounce) {
+                        playChime();
+                        flashLoungeDisplay();
+                    }
+                }
+            };
+        }
+
+        function renderDisplay() {
+            const displayNumEl = document.getElementById('display-current-num');
+            const upcomingListEl = document.getElementById('display-upcoming-list');
+
+            const currentStr = state.current ? String(state.current.id).padStart(3, '0') : '---';
+            if (displayNumEl) displayNumEl.textContent = currentStr;
+
+            if (upcomingListEl) {
+                upcomingListEl.innerHTML = '';
+                if (!state.queue || state.queue.length === 0) {
+                    upcomingListEl.innerHTML = `<div class="col-span-full text-center py-4 text-saudi-lightGold/60 font-bold text-sm">لا توجد أرقام منتظرة حالياً</div>`;
+                } else {
+                    state.queue.slice(0, 4).forEach((patient) => {
+                        const card = document.createElement('div');
+                        card.className = "bg-saudi-darkGreen p-4 rounded-2xl border border-saudi-gold/40 text-center shadow";
+                        card.innerHTML = `
+                            <span class="text-xs text-saudi-lightGold block font-bold mb-1">رقم الانتظار</span>
+                            <span class="text-3xl font-black text-white">${String(patient.id).padStart(3, '0')}</span>
+                            <span class="text-[11px] text-white/70 block mt-1 truncate">${patient.name || 'مراجع'}</span>
+                        `;
+                        upcomingListEl.appendChild(card);
+                    });
+                }
+            }
+        }
+
+        function playChime() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioContext();
+                const freqs = [659.25, 880, 1318.51];
+                freqs.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.15));
+                    gain.gain.setValueAtTime(0, ctx.currentTime + (idx * 0.15));
+                    gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + (idx * 0.15) + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (idx * 0.15) + 0.7);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + (idx * 0.15));
+                    osc.stop(ctx.currentTime + (idx * 0.15) + 0.7);
+                });
+            } catch (e) {}
+        }
+
+        function flashLoungeDisplay() {
+            const loungeCard = document.getElementById('lounge-card-container');
+            if (loungeCard) {
+                loungeCard.classList.add('call-flash');
+                setTimeout(() => loungeCard.classList.remove('call-flash'), 3000);
+            }
+        }
+
+        window.toggleFullScreen = function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        };
+
+        renderDisplay();
+    </script>
+</body>
+</html>
