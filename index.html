@@ -103,11 +103,6 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button onclick="toggleFullScreen()" class="bg-saudi-darkGreen hover:bg-saudi-green text-saudi-lightGold border border-saudi-gold/50 px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 shadow">
-                        <i class="fa-solid fa-expand text-saudi-gold"></i>
-                        <span>تكبير الشاشة</span>
-                    </button>
-
                     <div id="nav-tabs-container" class="bg-saudi-darkGreen p-1 rounded-2xl flex items-center gap-1 border border-saudi-gold/40 shadow-inner">
                         <button onclick="switchView('reception')" id="btn-tab-reception" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow">
                             <i class="fa-solid fa-user-gear"></i>
@@ -315,6 +310,10 @@
                 </div>
 
                 <div class="flex items-center gap-3">
+                    <button onclick="toggleFullScreen()" class="bg-saudi-emerald hover:bg-saudi-green text-saudi-lightGold border border-saudi-gold/60 px-4 py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 shadow">
+                        <i class="fa-solid fa-expand text-saudi-gold"></i>
+                        <span>تكبير الشاشة</span>
+                    </button>
                     <button type="button" onclick="switchView('reception')" class="bg-saudi-gold hover:bg-amber-400 text-saudi-darkGreen px-4 py-2.5 rounded-xl text-xs font-black shadow transition flex items-center gap-2">
                         <i class="fa-solid fa-arrow-right"></i>
                         <span>العودة للاستقبال</span>
@@ -374,7 +373,7 @@
                     <span class="bg-emerald-500 text-white font-black text-xs px-3 py-1 rounded-full inline-block">تم إصدار تذكرتك بنجاح</span>
                     <p class="text-xs text-slate-600">رقم دورك في القائمة:</p>
                     <div id="my-ticket-number" class="text-6xl font-black text-saudi-green">---</div>
-                    <p class="text-xs text-slate-500">الرجاء الانتظار في الصالة حتى ينادي رقمك الشاشة.</p>
+                    <p class="text-xs text-slate-500">الرجاء الانتظار في الصالة ومتابعة الشاشة حتى ينادي رقمك.</p>
                     <button onclick="resetPatientPortalForm()" class="mt-4 px-4 py-2 bg-saudi-darkGreen text-saudi-lightGold rounded-xl text-xs font-bold">اصدار تذكرة أخرى</button>
                 </div>
 
@@ -719,7 +718,6 @@
             }
         };
 
-        // Check if URL has portal mode parameter or hash
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('mode') === 'portal' || window.location.hash === '#portal') {
             switchView('portal');
@@ -729,7 +727,6 @@
             const qrContainer = document.getElementById('qrcode-container');
             if (qrContainer && typeof QRCode !== 'undefined') {
                 qrContainer.innerHTML = '';
-                // Generate QR code pointing directly to portal mode
                 const portalUrl = window.location.origin + window.location.pathname + '?mode=portal';
                 new QRCode(qrContainer, {
                     text: portalUrl,
