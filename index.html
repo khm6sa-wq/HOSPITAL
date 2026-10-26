@@ -61,21 +61,6 @@
             0%, 100% { background-color: rgba(255, 255, 255, 0.98); }
             50% { background-color: rgba(243, 229, 171, 0.7); }
         }
-        body.is-fullscreen #top-royal-bar,
-        body.is-fullscreen nav,
-        body.is-fullscreen #connection-status,
-        body.is-fullscreen footer,
-        body.is-fullscreen #view-reception {
-            display: none !important;
-        }
-        body.is-fullscreen #main-container {
-            max-width: 100% !important;
-            padding: 1.5rem !important;
-            margin: 0 !important;
-        }
-        body.is-fullscreen #view-display {
-            display: block !important;
-        }
     </style>
 </head>
 <body class="saudi-pattern-bg text-slate-800 flex flex-col min-h-screen">
@@ -99,7 +84,7 @@
         </div>
     </div>
 
-    <!-- Navigation Header Always Visible -->
+    <!-- Navigation Header -->
     <nav class="bg-saudi-emerald text-white sticky top-0 z-50 border-b-2 border-saudi-gold/60 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
@@ -113,19 +98,19 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl sm:text-3xl font-black text-white tracking-wide font-tajawal">مستشفى الملك فيصل</h1>
+                        <h1 class="text-xl sm:text-2xl font-black text-white tracking-wide font-tajawal">مستشفى الملك فيصل</h1>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2">
                     <div class="bg-saudi-darkGreen p-1 rounded-2xl flex items-center gap-1 border border-saudi-gold/40 shadow-inner">
-                        <button onclick="window.switchView('reception')" id="btn-tab-reception" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-2 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow">
+                        <button onclick="switchView('reception')" id="btn-tab-reception" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow">
                             <i class="fa-solid fa-user-gear"></i>
-                            <span>لوحة الاستقبال</span>
+                            <span>الاستقبال</span>
                         </button>
-                        <button onclick="window.switchView('display')" id="btn-tab-display" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-2">
+                        <button onclick="switchView('display')" id="btn-tab-display" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-1.5">
                             <i class="fa-solid fa-tv"></i>
-                            <span>شاشة صالة الانتظار</span>
+                            <span>الشاشة</span>
                         </button>
                     </div>
                 </div>
@@ -134,12 +119,12 @@
     </nav>
 
     <!-- Main Body Area -->
-    <main id="main-container" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        <div id="connection-status" class="mb-6 p-3 rounded-2xl bg-white border-r-4 border-r-saudi-gold border border-slate-200/80 shadow-sm flex items-center justify-between text-xs">
+        <div class="mb-6 p-3 rounded-2xl bg-white border-r-4 border-r-saudi-gold border border-slate-200/80 shadow-sm flex items-center justify-between text-xs">
             <div class="flex items-center gap-2.5">
-                <span id="status-dot" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span id="status-text" class="font-bold text-slate-700">مستشفى الملك فيصل - النظام متزامن سحابياً وبشكل حي عبر جميع الأجهزة.</span>
+                <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="font-bold text-slate-700">النظام متزامن سحابياً ومحلياً بكفاءة تامة.</span>
             </div>
         </div>
 
@@ -164,7 +149,7 @@
                             </div>
                         </div>
 
-                        <form id="add-patient-form" onsubmit="window.handleAddPatient(event)" class="space-y-4">
+                        <form id="add-patient-form" onsubmit="handleAddPatient(event)" class="space-y-4">
                             <div>
                                 <label class="block text-xs font-black text-slate-700 mb-1.5">اسم المراجع (اختياري)</label>
                                 <div class="relative">
@@ -173,7 +158,7 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-saudi-green to-saudi-darkGreen hover:from-saudi-darkGreen hover:to-saudi-green text-white font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 border border-saudi-gold/40 active:scale-98">
+                            <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-saudi-green to-saudi-darkGreen hover:from-saudi-darkGreen hover:to-saudi-green text-white font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 border border-saudi-gold/40">
                                 <i class="fa-solid fa-plus-circle text-saudi-gold"></i>
                                 <span>إصدار دور جديد</span>
                             </button>
@@ -186,33 +171,30 @@
                             <i class="fa-solid fa-qrcode text-saudi-gold"></i>
                             <span>باركود فتح النظام على الجوال</span>
                         </h3>
-                        <p class="text-xs text-slate-500">امسح الكود لفتح شاشة العرض أو التحكم على الهاتف المحمول:</p>
+                        <p class="text-xs text-slate-500">امسح الكود لفتح الشاشة أو التحكم:</p>
                         <div id="qrcode-container" class="flex justify-center my-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/60 inline-block"></div>
-                        <div class="text-[11px] text-saudi-green font-bold bg-saudi-green/10 py-1.5 px-3 rounded-xl">
-                            الرابط التزامني جاهز للمشاركة
-                        </div>
                     </div>
 
                     <!-- Audio Controls Card -->
                     <div class="bg-white rounded-3xl p-6 border border-slate-200/80 emerald-card-shadow">
                         <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2 border-b pb-3 border-slate-100">
                             <i class="fa-solid fa-sliders text-saudi-gold"></i>
-                            <span>التحكم الصوتي والنداء العربي</span>
+                            <span>التحكم الصوتي</span>
                         </h3>
 
                         <div class="space-y-3">
                             <label class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200/60 transition">
                                 <span class="text-xs font-black text-slate-700 flex items-center gap-2">
-                                    <i class="fa-solid fa-volume-high text-saudi-green"></i> صوت التنبيه والنداء العربي
+                                    <i class="fa-solid fa-volume-high text-saudi-green"></i> صوت التنبيه والنداء
                                 </span>
                                 <input type="checkbox" id="audio-toggle" checked class="w-5 h-5 accent-saudi-green rounded cursor-pointer">
                             </label>
 
                             <div class="grid grid-cols-2 gap-2">
-                                <button onclick="window.testAudio()" class="py-2.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                                <button type="button" onclick="testAudio()" class="py-2.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
                                     <i class="fa-solid fa-bell text-saudi-gold"></i> تجربة الصوت
                                 </button>
-                                <button onclick="window.resetQueue()" class="py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                                <button type="button" onclick="resetQueue()" class="py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
                                     <i class="fa-solid fa-rotate-right"></i> تصفير الدور
                                 </button>
                             </div>
@@ -226,14 +208,469 @@
 
                     <!-- Action Buttons -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <button onclick="window.callNextPatient()" class="py-5 px-6 rounded-2xl bg-gradient-to-r from-saudi-green to-saudi-darkGreen hover:from-saudi-darkGreen hover:to-saudi-green text-white font-black text-lg shadow-xl hover:shadow-2xl border-2 border-saudi-gold/60 transition-all transform hover:-translate-y-0.5 flex flex-col items-center justify-center gap-1 active:scale-95">
+                        <button type="button" onclick="callNextPatient()" class="py-5 px-6 rounded-2xl bg-gradient-to-r from-saudi-green to-saudi-darkGreen hover:from-saudi-darkGreen hover:to-saudi-green text-white font-black text-lg shadow-xl border-2 border-saudi-gold/60 transition-all flex flex-col items-center justify-center gap-1">
                             <span class="flex items-center gap-2">
-                                <i class="fa-solid fa-circle-arrow-left text-saudi-gold text-2xl animate-pulse"></i>
+                                <i class="fa-solid fa-circle-arrow-left text-saudi-gold text-2xl"></i>
                                 <span>الرقم التالي</span>
                             </span>
-                            <span class="text-xs text-saudi-lightGold/80 font-normal">استدعاء المراجع التالي فوراً</span>
+                            <span class="text-xs text-saudi-lightGold/80 font-normal">استدعاء المراجع التالي</span>
                         </button>
 
-                        <button onclick="window.recallCurrentPatient()" class="py-5 px-6 rounded-2xl bg-white hover:bg-amber-50 text-saudi-darkGreen border-2 border-saudi-gold font-extrabold text-base shadow-md hover:shadow-lg transition-all flex flex-col items-center justify-center gap-1 active:scale-95">
+                        <button type="button" onclick="recallCurrentPatient()" class="py-5 px-6 rounded-2xl bg-white hover:bg-amber-50 text-saudi-darkGreen border-2 border-saudi-gold font-extrabold text-base shadow-md transition-all flex flex-col items-center justify-center gap-1">
                             <span class="flex items-center gap-2">
-                                <i class="fa-solid fa-bull
+                                <i class="fa-solid fa-bullhorn text-saudi-gold text-xl"></i>
+                                <span>إعادة المناداة</span>
+                            </span>
+                            <span class="text-xs text-slate-500 font-normal">تكرار التنبيه</span>
+                        </button>
+
+                        <button type="button" onclick="skipCurrentPatient()" class="py-5 px-6 rounded-2xl bg-white hover:bg-rose-50 text-slate-700 border border-slate-300 font-extrabold text-base shadow-sm transition-all flex flex-col items-center justify-center gap-1">
+                            <span class="flex items-center gap-2">
+                                <i class="fa-solid fa-forward-step text-slate-400 text-lg"></i>
+                                <span>تجاوز الرقم</span>
+                            </span>
+                            <span class="text-xs text-slate-400 font-normal">إنهاء الدور الحالي</span>
+                        </button>
+                    </div>
+
+                    <!-- Current Active Ticket Badge -->
+                    <div class="bg-gradient-to-br from-white via-amber-50/20 to-saudi-sand rounded-3xl p-6 border-2 border-saudi-gold/40 emerald-card-shadow flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div>
+                            <span class="bg-saudi-green text-white font-black text-xs px-3.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2">
+                                <span class="w-2 h-2 rounded-full bg-saudi-gold animate-ping"></span>
+                                الرقم قيد الخدمة الآن
+                            </span>
+                            <h3 class="text-slate-500 text-xs font-bold">الرقم الحالي</h3>
+                            <div class="text-6xl sm:text-7xl font-black text-saudi-darkGreen tracking-tight my-1" id="reception-current-num">---</div>
+                        </div>
+
+                        <div class="flex flex-row sm:flex-col gap-4 text-center sm:text-left bg-white/80 p-4 rounded-2xl border border-saudi-gold/30">
+                            <div>
+                                <span class="text-xs text-slate-400 block font-bold">المنتظرون</span>
+                                <span class="text-2xl font-black text-saudi-green" id="stat-waiting-count">0</span>
+                            </div>
+                            <div class="border-t border-slate-100 pt-2">
+                                <span class="text-xs text-slate-400 block font-bold">المخدومون</span>
+                                <span class="text-2xl font-black text-saudi-gold" id="stat-served-count">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Queue Table Card -->
+                    <div class="bg-white rounded-3xl border border-slate-200/80 emerald-card-shadow overflow-hidden">
+                        <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-saudi-gold"></div>
+                                <h3 class="font-black text-saudi-darkGreen text-base">قائمة الانتظار</h3>
+                            </div>
+                            <span class="text-xs font-bold text-saudi-green bg-saudi-green/10 border border-saudi-green/20 px-3 py-1 rounded-full" id="queue-list-counter">0 مراجعين</span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right">
+                                <thead>
+                                    <tr class="text-xs font-black text-slate-400 border-b border-slate-100 bg-slate-50">
+                                        <th class="py-3 px-4">رقم الدور</th>
+                                        <th class="py-3 px-4">اسم المراجع</th>
+                                        <th class="py-3 px-4">وقت التسجيل</th>
+                                        <th class="py-3 px-4 text-center">حذف</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="queue-table-body" class="divide-y divide-slate-100 text-sm">
+                                </tbody>
+                            </table>
+                            <div id="empty-queue-msg" class="text-center py-12 text-slate-400 font-bold hidden">
+                                <i class="fa-solid fa-clipboard-check text-4xl text-slate-300 mb-2 block"></i>
+                                لا يوجد مراجعين في قائمة الانتظار حالياً
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- =================VIEW 2: LOUNGE DISPLAY SCREEN================ -->
+        <section id="view-display" class="hidden space-y-6">
+
+            <div class="bg-saudi-darkGreen text-white p-5 sm:p-6 rounded-3xl border-2 border-saudi-gold/60 shadow-xl flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-saudi-emerald border border-saudi-gold flex items-center justify-center p-2 text-saudi-gold shadow shrink-0">
+                        <svg class="w-full h-full fill-saudi-gold" viewBox="0 0 100 100">
+                            <path d="M50,15 C52,25 58,32 68,36 C58,38 53,42 52,50 C48,50 43,42 33,36 C43,32 48,25 50,15 Z" />
+                            <path d="M47,48 L53,48 L53,82 L47,82 Z" />
+                            <path d="M20,78 Q50,70 80,55 L75,50 Q48,64 22,70 Z" />
+                            <path d="M80,78 Q50,70 20,55 L25,50 Q52,64 78,70 Z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white font-tajawal">مستشفى الملك فيصل</h2>
+                        <p class="text-xs text-saudi-lightGold font-semibold">صالة الانتظار الرئيسية</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="switchView('reception')" class="bg-saudi-gold hover:bg-amber-400 text-saudi-darkGreen px-4 py-2.5 rounded-xl text-xs font-black shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <span>العودة للاستقبال</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="max-w-5xl mx-auto space-y-8">
+                <div id="lounge-card-container" class="bg-white rounded-3xl p-8 sm:p-12 border-4 border-saudi-emerald shadow-2xl text-center relative overflow-hidden transition-all duration-300">
+                    <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-saudi-gold via-saudi-green to-saudi-gold"></div>
+                    
+                    <div class="text-slate-600 font-black text-2xl sm:text-4xl mb-2 flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-bell text-saudi-gold animate-bounce"></i>
+                        <span>الرقم الحالي المخدوم</span>
+                    </div>
+
+                    <div id="display-current-num" class="text-8xl sm:text-[13rem] leading-none font-black text-saudi-green tracking-tight my-6 py-10 bg-saudi-sand/90 rounded-3xl border-2 border-saudi-gold/40 shadow-inner">
+                        ---
+                    </div>
+
+                    <div class="bg-saudi-emerald text-saudi-lightGold p-4 sm:p-5 rounded-2xl border border-saudi-gold/50 text-xl sm:text-3xl font-black shadow-md flex items-center justify-center gap-3 max-w-2xl mx-auto">
+                        <i class="fa-solid fa-stethoscope text-saudi-gold text-2xl"></i>
+                        <span>الرجاء التوجه للعيادة</span>
+                    </div>
+                </div>
+
+                <div class="bg-saudi-emerald text-white rounded-3xl p-6 sm:p-8 border-2 border-saudi-gold/50 shadow-xl">
+                    <div class="flex items-center justify-between border-b border-saudi-gold/30 pb-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-saudi-gold text-saudi-darkGreen flex items-center justify-center font-black text-lg">
+                                <i class="fa-solid fa-list-ol"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-black text-saudi-lightGold text-xl">الأرقام التالية بالانتظار</h3>
+                                <p class="text-xs text-white/70">الرجاء الاستعداد</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="display-upcoming-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-saudi-darkGreen text-saudi-lightGold py-6 border-t border-saudi-gold/30 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs space-y-1">
+            <p class="font-bold">جميع الحقوق محفوظة © مستشفى الملك فيصل - المملكة العربية السعودية</p>
+        </div>
+    </footer>
+
+    <!-- Script Engine -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
+            authDomain: "hospital-ba989.firebaseapp.com",
+            projectId: "hospital-ba989",
+            storageBucket: "hospital-ba989.firebasestorage.app",
+            messagingSenderId: "30608387919",
+            appId: "1:30608387919:web:ee0f83efabc514e5ff1f3a",
+            measurementId: "G-6R34PWFVWK"
+        };
+
+        let state = {
+            queue: [],
+            current: null,
+            servedCount: 0,
+            ticketCounter: 0
+        };
+
+        try {
+            const localSaved = localStorage.getItem('kfh_queue_state');
+            if (localSaved) {
+                const parsed = JSON.parse(localSaved);
+                if (parsed && parsed.state) state = parsed.state;
+            }
+        } catch (e) {}
+
+        let db = null;
+        let isRemoteUpdate = false;
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            const auth = getAuth(app);
+            signInAnonymously(auth).catch(() => {});
+
+            const docRef = doc(db, "queues", "hospital_main_queue");
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if (cloudData && cloudData.state) {
+                        isRemoteUpdate = true;
+                        state = cloudData.state;
+                        renderApp();
+                        if (cloudData.shouldAnnounce) {
+                            playChime();
+                            flashLoungeDisplay();
+                            speakCurrentNumber();
+                        }
+                        isRemoteUpdate = false;
+                    }
+                }
+            }, () => {});
+        } catch (e) {}
+
+        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
+        if (queueChannel) {
+            queueChannel.onmessage = (event) => {
+                if (event.data && event.data.type === 'STATE_UPDATE' && !isRemoteUpdate) {
+                    state = event.data.state;
+                    renderApp();
+                    if (event.data.shouldAnnounce) {
+                        playChime();
+                        flashLoungeDisplay();
+                        speakCurrentNumber();
+                    }
+                }
+            };
+        }
+
+        window.syncState = function(shouldAnnounce = false) {
+            renderApp();
+            const payload = { state, shouldAnnounce, timestamp: Date.now() };
+            try {
+                localStorage.setItem('kfh_queue_state', JSON.stringify(payload));
+            } catch (e) {}
+
+            if (queueChannel) {
+                queueChannel.postMessage({ type: 'STATE_UPDATE', state, shouldAnnounce });
+            }
+
+            if (db && !isRemoteUpdate) {
+                const docRef = doc(db, "queues", "hospital_main_queue");
+                setDoc(docRef, { state, shouldAnnounce, updatedAt: new Date().toISOString() }).catch(() => {});
+            }
+        };
+
+        function renderApp() {
+            const currentNumEl = document.getElementById('reception-current-num');
+            const displayNumEl = document.getElementById('display-current-num');
+            const waitingCountEl = document.getElementById('stat-waiting-count');
+            const servedCountEl = document.getElementById('stat-served-count');
+            const queueTableBody = document.getElementById('queue-table-body');
+            const queueCounterEl = document.getElementById('queue-list-counter');
+            const emptyMsgEl = document.getElementById('empty-queue-msg');
+            const upcomingListEl = document.getElementById('display-upcoming-list');
+
+            const currentStr = state.current ? String(state.current.id).padStart(3, '0') : '---';
+            if (currentNumEl) currentNumEl.textContent = currentStr;
+            if (displayNumEl) displayNumEl.textContent = currentStr;
+
+            if (waitingCountEl) waitingCountEl.textContent = state.queue.length;
+            if (servedCountEl) servedCountEl.textContent = state.servedCount;
+            if (queueCounterEl) queueCounterEl.textContent = `${state.queue.length} مراجعين`;
+
+            if (queueTableBody) {
+                queueTableBody.innerHTML = '';
+                if (state.queue.length === 0) {
+                    if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
+                } else {
+                    if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
+                    state.queue.forEach((patient, index) => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                        tr.innerHTML = `
+                            <td class="py-3 px-4 font-black text-saudi-green">${String(patient.id).padStart(3, '0')}</td>
+                            <td class="py-3 px-4 font-semibold text-slate-700">${patient.name || 'مراجع بدون اسم'}</td>
+                            <td class="py-3 px-4 text-xs text-slate-400">${patient.time}</td>
+                            <td class="py-3 px-4 text-center">
+                                <button type="button" onclick="removePatient(${index})" class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 inline-flex items-center justify-center transition">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </td>
+                        `;
+                        queueTableBody.appendChild(tr);
+                    });
+                }
+            }
+
+            if (upcomingListEl) {
+                upcomingListEl.innerHTML = '';
+                if (state.queue.length === 0) {
+                    upcomingListEl.innerHTML = `<div class="col-span-full text-center py-4 text-saudi-lightGold/60 font-bold text-sm">لا توجد أرقام منتظرة حالياً</div>`;
+                } else {
+                    state.queue.slice(0, 4).forEach((patient) => {
+                        const card = document.createElement('div');
+                        card.className = "bg-saudi-darkGreen p-4 rounded-2xl border border-saudi-gold/40 text-center shadow";
+                        card.innerHTML = `
+                            <span class="text-xs text-saudi-lightGold block font-bold mb-1">رقم الانتظار</span>
+                            <span class="text-3xl font-black text-white">${String(patient.id).padStart(3, '0')}</span>
+                            <span class="text-[11px] text-white/70 block mt-1 truncate">${patient.name || 'مراجع'}</span>
+                        `;
+                        upcomingListEl.appendChild(card);
+                    });
+                }
+            }
+        }
+
+        function playChime() {
+            const toggle = document.getElementById('audio-toggle');
+            if (toggle && !toggle.checked) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.8);
+            } catch (e) {}
+        }
+
+        function speakCurrentNumber() {
+            const toggle = document.getElementById('audio-toggle');
+            if (toggle && !toggle.checked) return;
+            if (!state.current) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const text = `المراجع رقم ${state.current.id}، الرجاء التوجه للعيادة`;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ar-SA';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function flashLoungeDisplay() {
+            const loungeCard = document.getElementById('lounge-card-container');
+            if (loungeCard) {
+                loungeCard.classList.add('call-flash');
+                setTimeout(() => loungeCard.classList.remove('call-flash'), 3000);
+            }
+        }
+
+        window.handleAddPatient = function(e) {
+            if (e) e.preventDefault();
+            const nameInput = document.getElementById('patient-name');
+            const nameVal = nameInput ? nameInput.value.trim() : '';
+
+            state.ticketCounter++;
+            const newPatient = {
+                id: state.ticketCounter,
+                name: nameVal,
+                time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            state.queue.push(newPatient);
+            if (nameInput) nameInput.value = '';
+            syncState(false);
+        };
+
+        window.callNextPatient = function() {
+            if (state.queue.length === 0) {
+                alert("لا يوجد مراجعين في قائمة الانتظار حالياً.");
+                return;
+            }
+
+            const nextPatient = state.queue.shift();
+            state.current = { id: nextPatient.id };
+            state.servedCount++;
+
+            playChime();
+            flashLoungeDisplay();
+            speakCurrentNumber();
+            syncState(true);
+        };
+
+        window.recallCurrentPatient = function() {
+            if (!state.current || !state.current.id) {
+                alert("لا يوجد رقم حالي لإعادة المناداة.");
+                return;
+            }
+            playChime();
+            flashLoungeDisplay();
+            speakCurrentNumber();
+            syncState(true);
+        };
+
+        window.skipCurrentPatient = function() {
+            if (!state.current) return;
+            state.current = null;
+            syncState(false);
+        };
+
+        window.removePatient = function(index) {
+            state.queue.splice(index, 1);
+            syncState(false);
+        };
+
+        window.resetQueue = function() {
+            if (confirm("هل أنت متأكد من إعادة تصفير قائمة الانتظار تماماً والبدء من الرقم 1؟")) {
+                state.queue = [];
+                state.current = null;
+                state.ticketCounter = 0;
+                state.servedCount = 0;
+                syncState(false);
+            }
+        };
+
+        window.testAudio = function() {
+            playChime();
+            speakCurrentNumber();
+        };
+
+        window.switchView = function(viewName) {
+            const receptionSec = document.getElementById('view-reception');
+            const displaySec = document.getElementById('view-display');
+            const btnRec = document.getElementById('btn-tab-reception');
+            const btnDisp = document.getElementById('btn-tab-display');
+
+            if (!receptionSec || !displaySec) return;
+
+            if (viewName === 'reception') {
+                receptionSec.classList.remove('hidden');
+                receptionSec.classList.add('block');
+                displaySec.classList.add('hidden');
+                displaySec.classList.remove('block');
+
+                if (btnRec && btnDisp) {
+                    btnRec.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow";
+                    btnDisp.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-1.5";
+                }
+            } else {
+                receptionSec.classList.add('hidden');
+                receptionSec.classList.remove('block');
+                displaySec.classList.remove('hidden');
+                displaySec.classList.add('block');
+
+                if (btnRec && btnDisp) {
+                    btnDisp.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow";
+                    btnRec.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-1.5";
+                }
+            }
+        };
+
+        try {
+            const qrContainer = document.getElementById('qrcode-container');
+            if (qrContainer && typeof QRCode !== 'undefined') {
+                qrContainer.innerHTML = '';
+                new QRCode(qrContainer, {
+                    text: window.location.href,
+                    width: 110,
+                    height: 110,
+                    colorDark: "#004B25",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+        } catch (e) {}
+
+        renderApp();
+    </script>
+</body>
+</html>
