@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الانتظار والمواعيد - مستشفى الملك فيصل</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Cairo & Tajawal) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- QRCode Generator Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        saudi: {
+                            green: '#006C35',
+                            darkGreen: '#004B25',
+                            emerald: '#0B4B28',
+                            lightGreen: '#008743',
+                            gold: '#D4AF37',
+                            lightGold: '#F3E5AB',
+                            darkGold: '#A38128',
+                            sand: '#FBF9F5',
+                            cardBg: '#FFFFFF',
+                            slate: '#1E293B'
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'Tajawal', 'sans-serif'],
+                        tajawal: ['Tajawal', 'Cairo', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Tajawal', 'Cairo', sans-serif;
+            background-color: #F8F6F0;
+            min-height: 100vh;
+        }
+        .saudi-pattern-bg {
+            background-color: #F8F6F0;
+            background-image: radial-gradient(#006C35 0.75px, transparent 0.75px), radial-gradient(#D4AF37 0.75px, #F8F6F0 0.75px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+        .emerald-card-shadow {
+            box-shadow: 0 12px 35px -8px rgba(0, 108, 53, 0.12);
+        }
+        .call-flash {
+            animation: flashGolden 1s ease-in-out 3;
+        }
+        @keyframes flashGolden {
+            0%, 100% { background-color: rgba(255, 255, 255, 0.98); }
+            50% { background-color: rgba(243, 229, 171, 0.7); }
+        }
+        body.is-fullscreen #top-royal-bar,
+        body.is-fullscreen nav,
+        body.is-fullscreen #connection-status,
+        body.is-fullscreen footer,
+        body.is-fullscreen #view-reception {
+            display: none !important;
+        }
+        body.is-fullscreen #main-container {
+            max-width: 100% !important;
+            padding: 1.5rem !important;
+            margin: 0 !important;
+        }
+        body.is-fullscreen #view-display {
+            display: block !important;
+        }
+    </style>
+</head>
+<body class="saudi-pattern-bg text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Top Saudi Royal Bar -->
+    <div id="top-royal-bar" class="bg-saudi-darkGreen py-1.5 px-4 text-xs font-semibold text-saudi-lightGold border-b border-saudi-gold/30">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2 font-bold">
+                <svg class="w-5 h-5 fill-saudi-gold shrink-0" viewBox="0 0 100 100">
+                    <path d="M50,15 C52,25 58,32 68,36 C58,38 53,42 52,50 C48,50 43,42 33,36 C43,32 48,25 50,15 Z" />
+                    <path d="M47,48 L53,48 L53,82 L47,82 Z" />
+                    <path d="M20,78 Q50,70 80,55 L75,50 Q48,64 22,70 Z" />
+                    <path d="M80,78 Q50,70 20,55 L25,50 Q52,64 78,70 Z" />
+                </svg>
+                <span>المملكة العربية السعودية - وزارة الصحة</span>
+            </div>
+            <div class="flex items-center gap-2 font-bold text-saudi-gold">
+                <i class="fa-solid fa-gem text-[10px]"></i>
+                <span>رؤية 2030</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Header Always Visible -->
+    <nav class="bg-saudi-emerald text-white sticky top-0 z-50 border-b-2 border-saudi-gold/60 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <div class="w-12 h-12 rounded-2xl bg-saudi-darkGreen border-2 border-saudi-gold flex items-center justify-center p-2 text-saudi-gold shadow-md shrink-0">
+                        <svg class="w-full h-full fill-saudi-gold" viewBox="0 0 100 100">
+                            <path d="M50,15 C52,25 58,32 68,36 C58,38 53,42 52,50 C48,50 43,42 33,36 C43,32 48,25 50,15 Z" />
+                            <path d="M47,48 L53,48 L53,82 L47,82 Z" />
+                            <path d="M20,78 Q50,70 80,55 L75,50 Q48,64 22,70 Z" />
+                            <path d="M80,78 Q50,70 20,55 L25,50 Q52,64 78,70 Z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-black text-white tracking-wide font-tajawal">مستشفى الملك فيصل</h1>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="bg-saudi-darkGreen p-1 rounded-2xl flex items-center gap-1 border border-saudi-gold/40 shadow-inner">
+                        <button onclick="window.switchView('reception')" id="btn-tab-reception" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-2 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow">
+                            <i class="fa-solid fa-user-gear"></i>
+                            <span>لوحة الاستقبال</span>
+                        </button>
+                        <button onclick="window.switchView('display')" id="btn-tab-display" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-2">
+                            <i class="fa-solid fa-tv"></i>
+                            <span>شاشة صالة الانتظار</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Body Area -->
+    <main id="main-container" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <div id="connection-status" class="mb-6 p-3 rounded-2xl bg-white border-r-4 border-r-saudi-gold border border-slate-200/80 shadow-sm flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2.5">
+                <span id="status-dot" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="status-text" class="font-bold text-slate-700">مستشفى الملك فيصل - النظام متزامن سحابياً وبشكل حي عبر جميع الأجهزة.</span>
+            </div>
+        </div>
+
+        <!-- =================VIEW 1: RECEPTION CONTROL PANEL================ -->
+        <section id="view-reception" class="block space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- Control Side Panel -->
+                <div class="lg:col-span-4 space-y-6">
+                    
+                    <!-- Issue Ticket Card -->
+                    <div class="bg-white rounded-3xl p-6 border border-saudi-gold/30 emerald-card-shadow relative overflow-hidden">
+                        <div class="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-saudi-green via-saudi-gold to-saudi-green"></div>
+                        
+                        <div class="flex items-center gap-3 mb-5 border-b pb-4 border-slate-100">
+                            <div class="w-11 h-11 rounded-2xl bg-saudi-green/10 text-saudi-green flex items-center justify-center font-bold border border-saudi-green/20">
+                                <i class="fa-solid fa-ticket text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-black text-saudi-darkGreen text-lg">قطع تذكرة مراجع جديد</h2>
+                                <p class="text-xs text-slate-500 font-semibold">مستشفى الملك فيصل</p>
+                            </div>
+                        </div>
+
+                        <form id="add-patient-form" onsubmit="window.handleAddPatient(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-black text-slate-700 mb-1.5">اسم المراجع (اختياري)</label>
+                                <div class="relative">
+                                    <input type="text" id="patient-name" placeholder="أدخل اسم المراجع هنا" class="w-full pl-3 pr-10 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-saudi-green/40 focus:border-saudi-green text-sm bg-slate-50/50">
+                                    <i class="fa-solid fa-user absolute right-3.5 top-3.5 text-slate-400 text-sm"></i>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-saudi-green to-saudi-darkGreen hover:from-saudi-darkGreen hover:to-saudi-green text-white font-black rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 border border-saudi-gold/40 active:scale-98">
+                                <i class="fa-solid fa-plus-circle text-saudi-gold"></i>
+                                <span>إصدار دور جديد</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- QR Code Card -->
+                    <div class="bg-white rounded-3xl p-6 border border-saudi-gold/30 emerald-card-shadow text-center space-y-3">
+                        <h3 class="font-black text-saudi-darkGreen text-sm flex items-center justify-center gap-2 border-b pb-3 border-slate-100">
+                            <i class="fa-solid fa-qrcode text-saudi-gold"></i>
+                            <span>باركود فتح النظام على الجوال</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">امسح الكود لفتح شاشة العرض أو التحكم على الهاتف المحمول:</p>
+                        <div id="qrcode-container" class="flex justify-center my-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/60 inline-block"></div>
+                        <div class="text-[11px] text-saudi-green font-bold bg-saudi-green/10 py-1.5 px-3 rounded-xl">
+                            الرابط التزامني جاهز للمشاركة
+                        </div>
+                    </div>
+
+                    <!-- Audio Controls Card -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 emerald-card-shadow">
+                        <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2 border-b pb-3 border-slate-100">
+                            <i class="fa-solid fa-sliders text-saudi-gold"></i>
+                            <span>التحكم الصوتي والنداء العربي</span>
+                        </h3>
+
+                        <div class="space-y-3">
+                            <label class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200/60 transition">
+                                <span class="text-xs font-black text-slate-700 flex items-center gap-2">
+                                    <i class="fa-solid fa-volume-high text-saudi-green"></i> صوت التنبيه والنداء العربي
+                                </span>
+                                <input type="checkbox" id="audio-toggle" checked class="w-5 h-5 accent-saudi-green rounded cursor-pointer">
+                            </label>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="window.testAudio()" class="py-2.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-bell text-saudi-gold"></i> تجربة الصوت
+                                </button>
+                                <button onclick="window.resetQueue()" class="py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-rotate-right"></i> تصفير الدور
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Side: Action Buttons & Patient Queue -->
+                <div class="lg:col-span-8 space-y-6">
+
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <button onclick="window.callNextPatient()" class="py-5 px-6 rounded-2xl bg-gradient-to-r from-saudi-green to-saudi-darkGreen hover:from-saudi-darkGreen hover:to-saudi-green text-white font-black text-lg shadow-xl hover:shadow-2xl border-2 border-saudi-gold/60 transition-all transform hover:-translate-y-0.5 flex flex-col items-center justify-center gap-1 active:scale-95">
+                            <span class="flex items-center gap-2">
+                                <i class="fa-solid fa-circle-arrow-left text-saudi-gold text-2xl animate-pulse"></i>
+                                <span>الرقم التالي</span>
+                            </span>
+                            <span class="text-xs text-saudi-lightGold/80 font-normal">استدعاء المراجع التالي فوراً</span>
+                        </button>
+
+                        <button onclick="window.recallCurrentPatient()" class="py-5 px-6 rounded-2xl bg-white hover:bg-amber-50 text-saudi-darkGreen border-2 border-saudi-gold font-extrabold text-base shadow-md hover:shadow-lg transition-all flex flex-col items-center justify-center gap-1 active:scale-95">
+                            <span class="flex items-center gap-2">
+                                <i class="fa-solid fa-bull
