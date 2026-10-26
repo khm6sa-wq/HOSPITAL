@@ -378,12 +378,16 @@
                             <div id="my-ticket-number" class="text-3xl font-black text-saudi-darkGreen">---</div>
                         </div>
                         <div class="bg-white p-3 rounded-xl border border-saudi-gold/30">
-                            <span class="text-xs text-slate-500 block font-bold mb-1">الرقم الحالي قيد الخدمة</span>
+                            <span class="text-xs text-slate-500 block font-bold mb-1">الرقم الحالي</span>
                             <div id="portal-current-num" class="text-3xl font-black text-saudi-green">---</div>
                         </div>
                     </div>
 
-                    <p class="text-xs text-slate-600 font-semibold">الرجاء الانتظار ومتابعة الرقم الحالي حتى ينادي دورك.</p>
+                    <!-- Real-time Turn Status Message for Patient -->
+                    <div id="portal-status-alert" class="p-3 rounded-xl bg-white border border-saudi-gold/40 text-xs font-bold text-slate-700">
+                        جاري احتساب حالتك...
+                    </div>
+
                     <button onclick="resetPatientPortalForm()" class="px-4 py-2 bg-saudi-darkGreen text-saudi-lightGold rounded-xl text-xs font-bold transition hover:bg-saudi-green">اصدار تذكرة أخرى</button>
                 </div>
 
@@ -438,12 +442,16 @@
             ticketCounter: 0
         };
 
+        let myActiveTicketId = null;
+
         try {
             const localSaved = localStorage.getItem('kfh_queue_state');
             if (localSaved) {
                 const parsed = JSON.parse(localSaved);
                 if (parsed && parsed.state) state = parsed.state;
             }
+            const savedMyTicket = localStorage.getItem('kfh_my_ticket');
+            if (savedMyTicket) myActiveTicketId = parseInt(savedMyTicket);
         } catch (e) {}
 
         let db = null;
@@ -511,4 +519,304 @@
             const waitingCountEl = document.getElementById('stat-waiting-count');
             const servedCountEl = document.getElementById('stat-served-count');
             const queueTableBody = document.getElementById('queue-table-body');
-            const queueCounterEl = document
+            const queueCounterEl = document.getElementById('queue-list-counter');
+            const emptyMsgEl = document.getElementById('empty-queue-msg');
+            const upcomingListEl = document.getElementById('display-upcoming-list');
+
+            const currentStr = state.current ? String(state.current.id).padStart(3, '0') : '---';
+            if (currentNumEl) currentNumEl.textContent = currentStr;
+            if (displayNumEl) displayNumEl.textContent = currentStr;
+            if (portalCurrentNumEl) portalCurrentNumEl.textContent = currentStr;
+
+            if (myActiveTicketId) {
+                const myTicketEl = document.getElementById('my-ticket-number');
+                if (myTicketEl) myTicketEl.textContent = String(myActiveTicketId).padStart(3, '0');
+
+                const statusAlertEl = document.getElementById('portal-status-alert');
+                if (statusAlertEl) {
+                    const currentId = state.current ? state.current.id : 0;
+                    if (myActiveTicketId === currentId) {
+                        statusAlertEl.innerHTML = `<span class="text-emerald-600 font-black text-base animate-bounce">🎉 لقد حان دورك الآن! الرجاء التوجه للعيادة فوراً.</span>`;
+                    } else if (myActiveTicketId < currentId) {
+                        statusAlertEl.innerHTML = `<span class="text-slate-500">تمت خدمة رقمك أو تجاوزه.</span>`;
+                    } else {
+                        // Find position in queue
+                        const indexInQueue = state.queue.findIndex(p => p.id === myActiveTicketId);
+                        if (indexInQueue !== -1) {
+                            const peopleAhead = indexInQueue + 1;
+                            if (peopleAhead === 1) {
+                                statusAlertEl.innerHTML = `<span class="text-amber-600 font-bold">⚠️ أنت التالي في الدور مباشرة! استعد.</span>`;
+                            } else {
+                                statusAlertEl.innerHTML = `<span class="text-slate-600">📊 يوجد <span class="text-saudi-green font-black">${peopleAhead}</span> مراجعين أمامك في الانتظار.</span>`;
+                            }
+                        } else {
+                            statusAlertEl.innerHTML = `<span class="text-slate-500">تمت معالجة تذكرتك أو نداء دورك.</span>`;
+                        }
+                    }
+                }
+            }
+
+            if (waitingCountEl) waitingCountEl.textContent = state.queue.length;
+            if (servedCountEl) servedCountEl.textContent = state.servedCount;
+            if (queueCounterEl) queueCounterEl.textContent = `${state.queue.length} مراجعين`;
+
+            if (queueTableBody) {
+                queueTableBody.innerHTML = '';
+                if (state.queue.length === 0) {
+                    if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
+                } else {
+                    if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
+                    state.queue.forEach((patient, index) => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                        tr.innerHTML = `
+                            <td class="py-3 px-4 font-black text-saudi-green">${String(patient.id).padStart(3, '0')}</td>
+                            <td class="py-3 px-4 font-semibold text-slate-700">${patient.name || 'مراجع بدون اسم'}</td>
+                            <td class="py-3 px-4 text-xs text-slate-400">${patient.time}</td>
+                            <td class="py-3 px-4 text-center">
+                                <button type="button" onclick="removePatient(${index})" class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 inline-flex items-center justify-center transition">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </td>
+                        `;
+                        queueTableBody.appendChild(tr);
+                    });
+                }
+            }
+
+            if (upcomingListEl) {
+                upcomingListEl.innerHTML = '';
+                if (state.queue.length === 0) {
+                    upcomingListEl.innerHTML = `<div class="col-span-full text-center py-4 text-saudi-lightGold/60 font-bold text-sm">لا توجد أرقام منتظرة حالياً</div>`;
+                } else {
+                    state.queue.slice(0, 4).forEach((patient) => {
+                        const card = document.createElement('div');
+                        card.className = "bg-saudi-darkGreen p-4 rounded-2xl border border-saudi-gold/40 text-center shadow";
+                        card.innerHTML = `
+                            <span class="text-xs text-saudi-lightGold block font-bold mb-1">رقم الانتظار</span>
+                            <span class="text-3xl font-black text-white">${String(patient.id).padStart(3, '0')}</span>
+                            <span class="text-[11px] text-white/70 block mt-1 truncate">${patient.name || 'مراجع'}</span>
+                        `;
+                        upcomingListEl.appendChild(card);
+                    });
+                }
+            }
+        }
+
+        // Extremely clear and loud professional chime sound using browser AudioContext
+        function playChime() {
+            const toggle = document.getElementById('audio-toggle');
+            if (toggle && !toggle.checked) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioContext();
+                
+                // Clear 3-tone chime sequence (High definition bell)
+                const freqs = [659.25, 880, 1318.51]; // E5, A5, E6
+                freqs.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + (idx * 0.15));
+                    
+                    gain.gain.setValueAtTime(0, ctx.currentTime + (idx * 0.15));
+                    gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + (idx * 0.15) + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (idx * 0.15) + 0.7);
+                    
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    
+                    osc.start(ctx.currentTime + (idx * 0.15));
+                    osc.stop(ctx.currentTime + (idx * 0.15) + 0.7);
+                });
+            } catch (e) {}
+        }
+
+        function flashLoungeDisplay() {
+            const loungeCard = document.getElementById('lounge-card-container');
+            if (loungeCard) {
+                loungeCard.classList.add('call-flash');
+                setTimeout(() => loungeCard.classList.remove('call-flash'), 3000);
+            }
+        }
+
+        window.toggleFullScreen = function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        };
+
+        window.handleAddPatient = function(e) {
+            if (e) e.preventDefault();
+            const nameInput = document.getElementById('patient-name');
+            const nameVal = nameInput ? nameInput.value.trim() : '';
+
+            state.ticketCounter++;
+            const newPatient = {
+                id: state.ticketCounter,
+                name: nameVal,
+                time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            state.queue.push(newPatient);
+            if (nameInput) nameInput.value = '';
+            syncState(false);
+        };
+
+        window.handlePatientPortalSubmit = function(e) {
+            if (e) e.preventDefault();
+            const nameInput = document.getElementById('portal-patient-name');
+            const nameVal = nameInput ? nameInput.value.trim() : '';
+
+            state.ticketCounter++;
+            const newPatient = {
+                id: state.ticketCounter,
+                name: nameVal,
+                time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            state.queue.push(newPatient);
+            myActiveTicketId = newPatient.id;
+            try {
+                localStorage.setItem('kfh_my_ticket', myActiveTicketId);
+            } catch(err) {}
+
+            syncState(false);
+
+            document.getElementById('patient-portal-form').classList.add('hidden');
+            const successBox = document.getElementById('ticket-success-box');
+            successBox.classList.remove('hidden');
+            document.getElementById('my-ticket-number').textContent = String(newPatient.id).padStart(3, '0');
+            renderApp();
+        };
+
+        window.resetPatientPortalForm = function() {
+            myActiveTicketId = null;
+            try { localStorage.removeItem('kfh_my_ticket'); } catch(e){}
+            document.getElementById('portal-patient-name').value = '';
+            document.getElementById('ticket-success-box').classList.add('hidden');
+            document.getElementById('patient-portal-form').classList.remove('hidden');
+        };
+
+        window.callNextPatient = function() {
+            if (state.queue.length === 0) {
+                alert("لا يوجد مراجعين في قائمة الانتظار حالياً.");
+                return;
+            }
+
+            const nextPatient = state.queue.shift();
+            state.current = { id: nextPatient.id };
+            state.servedCount++;
+
+            playChime();
+            flashLoungeDisplay();
+            syncState(true);
+        };
+
+        window.recallCurrentPatient = function() {
+            if (!state.current || !state.current.id) {
+                alert("لا يوجد رقم حالي لإعادة المناداة.");
+                return;
+            }
+            playChime();
+            flashLoungeDisplay();
+            syncState(true);
+        };
+
+        window.skipCurrentPatient = function() {
+            if (!state.current) return;
+            state.current = null;
+            syncState(false);
+        };
+
+        window.removePatient = function(index) {
+            state.queue.splice(index, 1);
+            syncState(false);
+        };
+
+        window.resetQueue = function() {
+            if (confirm("هل أنت متأكد من إعادة تصفير قائمة الانتظار تماماً والبدء من الرقم 1؟")) {
+                state.queue = [];
+                state.current = null;
+                state.ticketCounter = 0;
+                state.servedCount = 0;
+                myActiveTicketId = null;
+                try { localStorage.removeItem('kfh_my_ticket'); } catch(e){}
+                syncState(false);
+            }
+        };
+
+        window.testAudio = function() {
+            playChime();
+        };
+
+        window.switchView = function(viewName) {
+            const receptionSec = document.getElementById('view-reception');
+            const displaySec = document.getElementById('view-display');
+            const portalSec = document.getElementById('view-patient-portal');
+            const btnRec = document.getElementById('btn-tab-reception');
+            const btnDisp = document.getElementById('btn-tab-display');
+
+            if (!receptionSec || !displaySec || !portalSec) return;
+
+            receptionSec.classList.add('hidden');
+            displaySec.classList.add('hidden');
+            portalSec.classList.add('hidden');
+
+            if (viewName === 'reception') {
+                receptionSec.classList.remove('hidden');
+                if (btnRec && btnDisp) {
+                    btnRec.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow";
+                    btnDisp.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-1.5";
+                }
+            } else if (viewName === 'display') {
+                displaySec.classList.remove('hidden');
+                if (btnRec && btnDisp) {
+                    btnDisp.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow";
+                    btnRec.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-1.5";
+                }
+            } else if (viewName === 'portal') {
+                portalSec.classList.remove('hidden');
+                const tabsContainer = document.getElementById('nav-tabs-container');
+                if (tabsContainer) tabsContainer.style.display = 'none';
+                
+                // If user already has a saved ticket, show success box directly
+                if (myActiveTicketId) {
+                    document.getElementById('patient-portal-form').classList.add('hidden');
+                    const successBox = document.getElementById('ticket-success-box');
+                    successBox.classList.remove('hidden');
+                    document.getElementById('my-ticket-number').textContent = String(myActiveTicketId).padStart(3, '0');
+                }
+            }
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('mode') === 'portal' || window.location.hash === '#portal') {
+            switchView('portal');
+        }
+
+        try {
+            const qrContainer = document.getElementById('qrcode-container');
+            if (qrContainer && typeof QRCode !== 'undefined') {
+                qrContainer.innerHTML = '';
+                const portalUrl = window.location.origin + window.location.pathname + '?mode=portal';
+                new QRCode(qrContainer, {
+                    text: portalUrl,
+                    width: 110,
+                    height: 110,
+                    colorDark: "#004B25",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+        } catch (e) {}
+
+        renderApp();
+    </script>
+</body>
+</html>
