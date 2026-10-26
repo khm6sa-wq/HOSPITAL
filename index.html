@@ -58,7 +58,7 @@
 </head>
 <body class="saudi-pattern-bg text-slate-800 flex flex-col min-h-screen">
 
-    <!-- Strict Password Protection Modal for Reception -->
+    <!-- Password Protection Modal -->
     <div id="auth-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border-2 border-saudi-gold/50 text-center space-y-6">
             <div class="w-16 h-16 rounded-2xl bg-saudi-green/10 text-saudi-green flex items-center justify-center mx-auto border border-saudi-green/20">
@@ -66,11 +66,11 @@
             </div>
             <div>
                 <h3 class="text-xl font-black text-saudi-darkGreen">لوحة تحكم الاستقبال</h3>
-                <p class="text-xs text-slate-500 mt-1">الرجاء إدخال الرقم السري (114477) للمتابعة</p>
+                <p class="text-xs text-slate-500 mt-1">الرجاء إدخال كلمة السر (114477) للمتابعة</p>
             </div>
-            <form onsubmit="verifyPassword(event)" class="space-y-4">
-                <input type="password" id="access-password" placeholder="أدخل الرقم السري" maxlength="10" autofocus autocomplete="current-password" class="w-full text-center tracking-widest text-lg py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-saudi-green bg-slate-50">
-                <div id="password-error" class="text-rose-600 text-xs font-bold hidden">الرقم السري غير صحيح! (الرمز هو 114477)</div>
+            <form id="auth-form" onsubmit="verifyPassword(event)" class="space-y-4">
+                <input type="password" id="access-password" placeholder="أدخل كلمة السر هنا" maxlength="10" autofocus autocomplete="current-password" class="w-full text-center tracking-widest text-lg py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-saudi-green bg-slate-50">
+                <div id="password-error" class="text-rose-600 text-xs font-bold hidden">كلمة السر غير صحيحة! (الرمز هو 114477)</div>
                 <button type="submit" class="w-full py-3.5 bg-saudi-green hover:bg-saudi-darkGreen text-white font-black rounded-xl shadow-lg transition">دخول لوحة التحكم</button>
             </form>
         </div>
@@ -382,70 +382,4 @@
         } catch (e) {}
 
         let db = null;
-        let isRemoteUpdate = false;
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            const auth = getAuth(app);
-            signInAnonymously(auth).catch(() => {});
-
-            const docRef = doc(db, "queues", "hospital_main_queue");
-            onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const cloudData = docSnap.data();
-                    if (cloudData && cloudData.state) {
-                        isRemoteUpdate = true;
-                        state = cloudData.state;
-                        renderApp();
-                        isRemoteUpdate = false;
-                    }
-                }
-            }, () => {});
-        } catch (e) {}
-
-        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
-        if (queueChannel) {
-            queueChannel.onmessage = (event) => {
-                if (event.data && event.data.type === 'STATE_UPDATE' && !isRemoteUpdate) {
-                    state = event.data.state;
-                    renderApp();
-                }
-            };
-        }
-
-        window.syncState = function(shouldAnnounce = false) {
-            renderApp();
-            const payload = { state, shouldAnnounce, timestamp: Date.now() };
-            try {
-                localStorage.setItem('kfh_queue_state', JSON.stringify(payload));
-            } catch (e) {}
-
-            if (queueChannel) {
-                queueChannel.postMessage({ type: 'STATE_UPDATE', state, shouldAnnounce });
-            }
-
-            if (db && !isRemoteUpdate) {
-                const docRef = doc(db, "queues", "hospital_main_queue");
-                setDoc(docRef, { state, shouldAnnounce, updatedAt: new Date().toISOString() }).catch(() => {});
-            }
-        };
-
-        function renderApp() {
-            const currentNumEl = document.getElementById('reception-current-num');
-            const portalCurrentNumEl = document.getElementById('portal-current-num');
-            const waitingCountEl = document.getElementById('stat-waiting-count');
-            const servedCountEl = document.getElementById('stat-served-count');
-            const queueTableBody = document.getElementById('queue-table-body');
-            const queueCounterEl = document.getElementById('queue-list-counter');
-            const emptyMsgEl = document.getElementById('empty-queue-msg');
-
-            const currentStr = state.current ? String(state.current.id).padStart(3, '0') : '---';
-            if (currentNumEl) currentNumEl.textContent = currentStr;
-            if (portalCurrentNumEl) portalCurrentNumEl.textContent = currentStr;
-
-            if (myActiveTicketId) {
-                const myTicketEl = document.getElementById('my-ticket-number');
-                if (myTicketEl) myTicketEl.textContent = String(myActiveTicketId).padStart(3, '0');
-
-                const statusAlertEl = document.getElementById('portal-status-alert');
+        let is
