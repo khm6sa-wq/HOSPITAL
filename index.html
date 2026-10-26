@@ -108,7 +108,7 @@
                         <span>تكبير الشاشة</span>
                     </button>
 
-                    <div class="bg-saudi-darkGreen p-1 rounded-2xl flex items-center gap-1 border border-saudi-gold/40 shadow-inner">
+                    <div id="nav-tabs-container" class="bg-saudi-darkGreen p-1 rounded-2xl flex items-center gap-1 border border-saudi-gold/40 shadow-inner">
                         <button onclick="switchView('reception')" id="btn-tab-reception" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow">
                             <i class="fa-solid fa-user-gear"></i>
                             <span>الاستقبال</span>
@@ -174,9 +174,9 @@
                     <div class="bg-white rounded-3xl p-6 border border-saudi-gold/30 emerald-card-shadow text-center space-y-3">
                         <h3 class="font-black text-saudi-darkGreen text-sm flex items-center justify-center gap-2 border-b pb-3 border-slate-100">
                             <i class="fa-solid fa-qrcode text-saudi-gold"></i>
-                            <span>باركود فتح النظام على الجوال</span>
+                            <span>باركود حجز المراجعين الذاتي</span>
                         </h3>
-                        <p class="text-xs text-slate-500">امسح الكود لفتح الشاشة أو التحكم:</p>
+                        <p class="text-xs text-slate-500">امسح الكود عبر الجوال لقطع تذكرة مباشرة:</p>
                         <div id="qrcode-container" class="flex justify-center my-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/60 inline-block"></div>
                     </div>
 
@@ -355,6 +355,46 @@
                     </div>
 
                     <div id="display-upcoming-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================VIEW 3: PATIENT SELF TICKET BOOKING VIEW================ -->
+        <section id="view-patient-portal" class="hidden max-w-md mx-auto py-8">
+            <div class="bg-white rounded-3xl p-8 border-2 border-saudi-gold/40 emerald-card-shadow text-center space-y-6">
+                <div class="w-16 h-16 rounded-2xl bg-saudi-green/10 text-saudi-green flex items-center justify-center font-bold border border-saudi-green/20 mx-auto">
+                    <i class="fa-solid fa-hospital-user text-3xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-saudi-darkGreen">خدمة حجز الدور الذاتي</h2>
+                    <p class="text-xs text-slate-500 font-semibold mt-1">مستشفى الملك فيصل - اصدر تذكرتك بكل سهولة</p>
+                </div>
+
+                <div id="ticket-success-box" class="hidden p-6 bg-saudi-sand rounded-2xl border border-saudi-gold/50 space-y-3">
+                    <span class="bg-emerald-500 text-white font-black text-xs px-3 py-1 rounded-full inline-block">تم إصدار تذكرتك بنجاح</span>
+                    <p class="text-xs text-slate-600">رقم دورك في القائمة:</p>
+                    <div id="my-ticket-number" class="text-6xl font-black text-saudi-green">---</div>
+                    <p class="text-xs text-slate-500">الرجاء الانتظار في الصالة حتى ينادي رقمك الشاشة.</p>
+                    <button onclick="resetPatientPortalForm()" class="mt-4 px-4 py-2 bg-saudi-darkGreen text-saudi-lightGold rounded-xl text-xs font-bold">اصدار تذكرة أخرى</button>
+                </div>
+
+                <form id="patient-portal-form" onsubmit="handlePatientPortalSubmit(event)" class="space-y-4 text-right">
+                    <div>
+                        <label class="block text-xs font-black text-slate-700 mb-1.5">اسم المراجع الكريم (اختياري)</label>
+                        <div class="relative">
+                            <input type="text" id="portal-patient-name" placeholder="أدخل اسمك الكريم هنا" class="w-full pl-3 pr-10 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-saudi-green/40 focus:border-saudi-green text-sm bg-slate-50/50">
+                            <i class="fa-solid fa-user absolute right-3.5 top-3.5 text-slate-400 text-sm"></i>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 bg-gradient-to-r from-saudi-green to-saudi-darkGreen hover:from-saudi-darkGreen hover:to-saudi-green text-white font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 border border-saudi-gold/40 text-base">
+                        <i class="fa-solid fa-ticket text-saudi-gold"></i>
+                        <span>احجز دورك الآن</span>
+                    </button>
+                </form>
+
+                <div class="pt-4 border-t border-slate-100 text-xs text-slate-400">
+                    وزارة الصحة © المملكة العربية السعودية
                 </div>
             </div>
         </section>
@@ -570,6 +610,33 @@
             syncState(false);
         };
 
+        window.handlePatientPortalSubmit = function(e) {
+            if (e) e.preventDefault();
+            const nameInput = document.getElementById('portal-patient-name');
+            const nameVal = nameInput ? nameInput.value.trim() : '';
+
+            state.ticketCounter++;
+            const newPatient = {
+                id: state.ticketCounter,
+                name: nameVal,
+                time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            state.queue.push(newPatient);
+            syncState(false);
+
+            document.getElementById('patient-portal-form').classList.add('hidden');
+            const successBox = document.getElementById('ticket-success-box');
+            successBox.classList.remove('hidden');
+            document.getElementById('my-ticket-number').textContent = String(newPatient.id).padStart(3, '0');
+        };
+
+        window.resetPatientPortalForm = function() {
+            document.getElementById('portal-patient-name').value = '';
+            document.getElementById('ticket-success-box').classList.add('hidden');
+            document.getElementById('patient-portal-form').classList.remove('hidden');
+        };
+
         window.callNextPatient = function() {
             if (state.queue.length === 0) {
                 alert("لا يوجد مراجعين في قائمة الانتظار حالياً.");
@@ -623,40 +690,49 @@
         window.switchView = function(viewName) {
             const receptionSec = document.getElementById('view-reception');
             const displaySec = document.getElementById('view-display');
+            const portalSec = document.getElementById('view-patient-portal');
             const btnRec = document.getElementById('btn-tab-reception');
             const btnDisp = document.getElementById('btn-tab-display');
 
-            if (!receptionSec || !displaySec) return;
+            if (!receptionSec || !displaySec || !portalSec) return;
+
+            receptionSec.classList.add('hidden');
+            displaySec.classList.add('hidden');
+            portalSec.classList.add('hidden');
 
             if (viewName === 'reception') {
                 receptionSec.classList.remove('hidden');
-                receptionSec.classList.add('block');
-                displaySec.classList.add('hidden');
-                displaySec.classList.remove('block');
-
                 if (btnRec && btnDisp) {
                     btnRec.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow";
                     btnDisp.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-1.5";
                 }
-            } else {
-                receptionSec.classList.add('hidden');
-                receptionSec.classList.remove('block');
+            } else if (viewName === 'display') {
                 displaySec.classList.remove('hidden');
-                displaySec.classList.add('block');
-
                 if (btnRec && btnDisp) {
                     btnDisp.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow";
                     btnRec.className = "px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black text-saudi-lightGold hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-1.5";
                 }
+            } else if (viewName === 'portal') {
+                portalSec.classList.remove('hidden');
+                const tabsContainer = document.getElementById('nav-tabs-container');
+                if (tabsContainer) tabsContainer.style.display = 'none';
             }
         };
+
+        // Check if URL has portal mode parameter or hash
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('mode') === 'portal' || window.location.hash === '#portal') {
+            switchView('portal');
+        }
 
         try {
             const qrContainer = document.getElementById('qrcode-container');
             if (qrContainer && typeof QRCode !== 'undefined') {
                 qrContainer.innerHTML = '';
+                // Generate QR code pointing directly to portal mode
+                const portalUrl = window.location.origin + window.location.pathname + '?mode=portal';
                 new QRCode(qrContainer, {
-                    text: window.location.href,
+                    text: portalUrl,
                     width: 110,
                     height: 110,
                     colorDark: "#004B25",
