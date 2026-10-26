@@ -58,24 +58,7 @@
         }
     </style>
 </head>
-<body class="saudi-pattern-bg text-slate-800 flex flex-col min-h-screen">
-
-    <!-- Audio Permission Overlay / Modal -->
-    <div id="audio-overlay" class="fixed inset-0 bg-slate-900/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border-2 border-saudi-gold/50 text-center space-y-6">
-            <div class="w-20 h-20 rounded-3xl bg-saudi-green/10 text-saudi-green flex items-center justify-center mx-auto border border-saudi-green/20 shadow-inner">
-                <i class="fa-solid fa-volume-high text-4xl text-saudi-green"></i>
-            </div>
-            <div>
-                <h3 class="text-2xl font-black text-saudi-darkGreen">تفعيل شاشة الانتظار الصوتية</h3>
-                <p class="text-xs text-slate-500 mt-2 leading-relaxed">لضمان عمل جرس التنبيه وتحديث الأرقام تلقائياً على الشاشة، الرجاء النقر على زر التفعيل أدناه:</p>
-            </div>
-            <button onclick="enableAudioAndStart()" class="w-full py-4 bg-gradient-to-r from-saudi-green to-saudi-darkGreen hover:from-saudi-darkGreen hover:to-saudi-green text-white font-black rounded-2xl shadow-xl transition text-base flex items-center justify-center gap-2 border border-saudi-gold/50">
-                <i class="fa-solid fa-circle-play text-saudi-gold text-xl"></i>
-                <span>تفعيل وتشغيل الشاشة الآن</span>
-            </button>
-        </div>
-    </div>
+<body class="saudi-pattern-bg text-slate-800 flex flex-col min-h-screen" onclick="initAudioContext()">
 
     <!-- Top Saudi Royal Bar -->
     <div class="bg-saudi-darkGreen py-1.5 px-4 text-xs font-semibold text-saudi-lightGold border-b border-saudi-gold/30">
@@ -174,19 +157,16 @@
 
         let audioCtx = null;
 
-        window.enableAudioAndStart = function() {
+        window.initAudioContext = function() {
             try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                }
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
-                // Play a brief test chime to confirm audio is active
-                playChime();
             } catch (e) {}
-
-            const overlay = document.getElementById('audio-overlay');
-            if (overlay) overlay.classList.add('hidden');
         };
 
         let state = {
@@ -275,4 +255,52 @@
             }
         }
 
-        function
+        function playChime() {
+            try {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const freqs = [659.25, 880, 1318.51];
+                freqs.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (idx * 0.15));
+                    gain.gain.setValueAtTime(0, audioCtx.currentTime + (idx * 0.15));
+                    gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + (idx * 0.15) + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (idx * 0.15) + 0.7);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + (idx * 0.15));
+                    osc.stop(audioCtx.currentTime + (idx * 0.15) + 0.7);
+                });
+            } catch (e) {}
+        }
+
+        function flashLoungeDisplay() {
+            const loungeCard = document.getElementById('lounge-card-container');
+            if (loungeCard) {
+                loungeCard.classList.add('call-flash');
+                setTimeout(() => loungeCard.classList.remove('call-flash'), 3000);
+            }
+        }
+
+        window.toggleFullScreen = function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        };
+
+        renderDisplay();
+    </script>
+</body>
+</html>
