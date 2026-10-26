@@ -102,7 +102,12 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleFullScreen()" class="bg-saudi-darkGreen hover:bg-saudi-green text-saudi-lightGold border border-saudi-gold/50 px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 shadow">
+                        <i class="fa-solid fa-expand text-saudi-gold"></i>
+                        <span>تكبير الشاشة</span>
+                    </button>
+
                     <div class="bg-saudi-darkGreen p-1 rounded-2xl flex items-center gap-1 border border-saudi-gold/40 shadow-inner">
                         <button onclick="switchView('reception')" id="btn-tab-reception" class="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 flex items-center gap-1.5 bg-gradient-to-r from-saudi-gold to-amber-500 text-saudi-darkGreen shadow">
                             <i class="fa-solid fa-user-gear"></i>
@@ -185,7 +190,7 @@
                         <div class="space-y-3">
                             <label class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200/60 transition">
                                 <span class="text-xs font-black text-slate-700 flex items-center gap-2">
-                                    <i class="fa-solid fa-volume-high text-saudi-green"></i> صوت التنبيه والنداء
+                                    <i class="fa-solid fa-volume-high text-saudi-green"></i> صوت التنبيه
                                 </span>
                                 <input type="checkbox" id="audio-toggle" checked class="w-5 h-5 accent-saudi-green rounded cursor-pointer">
                             </label>
@@ -412,7 +417,6 @@
                         if (cloudData.shouldAnnounce) {
                             playChime();
                             flashLoungeDisplay();
-                            speakCurrentNumber();
                         }
                         isRemoteUpdate = false;
                     }
@@ -429,7 +433,6 @@
                     if (event.data.shouldAnnounce) {
                         playChime();
                         flashLoungeDisplay();
-                        speakCurrentNumber();
                     }
                 }
             };
@@ -532,20 +535,6 @@
             } catch (e) {}
         }
 
-        function speakCurrentNumber() {
-            const toggle = document.getElementById('audio-toggle');
-            if (toggle && !toggle.checked) return;
-            if (!state.current) return;
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const text = `المراجع رقم ${state.current.id}، الرجاء التوجه للعيادة`;
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ar-SA';
-                utterance.rate = 0.9;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
         function flashLoungeDisplay() {
             const loungeCard = document.getElementById('lounge-card-container');
             if (loungeCard) {
@@ -553,6 +542,16 @@
                 setTimeout(() => loungeCard.classList.remove('call-flash'), 3000);
             }
         }
+
+        window.toggleFullScreen = function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        };
 
         window.handleAddPatient = function(e) {
             if (e) e.preventDefault();
@@ -583,7 +582,6 @@
 
             playChime();
             flashLoungeDisplay();
-            speakCurrentNumber();
             syncState(true);
         };
 
@@ -594,7 +592,6 @@
             }
             playChime();
             flashLoungeDisplay();
-            speakCurrentNumber();
             syncState(true);
         };
 
@@ -621,7 +618,6 @@
 
         window.testAudio = function() {
             playChime();
-            speakCurrentNumber();
         };
 
         window.switchView = function(viewName) {
