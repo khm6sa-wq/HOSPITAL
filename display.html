@@ -154,7 +154,7 @@
             </div>
 
             <div id="status-box" class="bg-hospital-blue text-amber-200 p-4 rounded-2xl text-xs sm:text-sm font-black shadow-md">
-                جاري تحديث حالة دورك...
+                جاري الاتصال بالنظام وحجز تذكرتك الذكية...
             </div>
 
             <div class="pt-2 flex items-center justify-center gap-4">
@@ -284,7 +284,7 @@
         let userMode = localStorage.getItem('kfh_user_mode');
         let myTicketId = localStorage.getItem('kfh_my_ticket');
 
-        window.selectMode = function(mode) {
+        window.selectMode = async function(mode) {
             userMode = mode;
             localStorage.setItem('kfh_user_mode', mode);
 
@@ -292,7 +292,7 @@
 
             if (mode === 'ticket') {
                 if (typeof window.triggerTicketBooking === 'function') {
-                    window.triggerTicketBooking();
+                    await window.triggerTicketBooking();
                 }
             } else {
                 renderAllUI(currentCloudState);
@@ -412,7 +412,7 @@
         });
     </script>
 
-    <!-- Firebase Realtime Sync & Non-blocking Booking -->
+    <!-- Firebase Realtime Sync & Robust Booking Handler -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -436,14 +436,30 @@
             dbInstance = getFirestore(app);
             const auth = getAuth(app);
             
-            // تسجيل دخول مجهول بدون حظر التنفيذ
-            signInAnonymously(auth).catch(err => console.log(err));
-
+            await signInAnonymously(auth);
             docRefInstance = doc(dbInstance, "queues", "hospital_main_queue");
+            window.docRefInstance = docRefInstance; // ربط مرجعي عام
 
             window.triggerTicketBooking = async function() {
                 try {
-                    const docSnap = await getDoc(docRefInstance);
+                    const statusBox = document.getElementById('status-box');
+                    if (statusBox) statusBox.textContent = 'جاري تسجيل رقمك بالسحابة...';
+
+                    // التأكد من جاهزية مرجع قاعدة البيانات
+                    let ref = docRefInstance;
+                    let attempts = 0;
+                    while (!ref && attempts < 10) {
+                        await new Promise(r => setTimeout(r, 200));
+                        ref = window.docRefInstance;
+                        attempts++;
+                    }
+
+                    if (!ref) {
+                        alert('جاري تهيئة الاتصال، يرجى إعادة محاولة النقر بعد ثانية.');
+                        return;
+                    }
+
+                    const docSnap = await getDoc(ref);
                     let state = { queue: [], current: null, nextId: 1 };
                     if (docSnap.exists() && docSnap.data().state) {
                         state = docSnap.data().state;
@@ -452,13 +468,18 @@
                     if (!myTicketId) {
                         let newTicketNum = state.nextId || 1;
                         if (!state.queue) state.queue = [];
-                        state.queue.push({ id: Number(newTicketNum), time: Date.now() });
-                        state.nextId = Number(newTicketNum) + 1;
                         
-                        myTicketId = newTicketNum;
-                        localStorage.setItem('kfh_my_ticket', newTicketNum);
+                        // التحقق من عدم تكرار الرقم مسبقاً
+                        const exists = state.queue.some(p => p.id === newTicketNum) || (state.current && state.current.id === newTicketNum);
+                        if (!exists) {
+                            state.queue.push({ id: Number(newTicketNum), time: Date.now() });
+                            state.nextId = Number(newTicketNum) + 1;
+                            
+                            myTicketId = newTicketNum;
+                            localStorage.setItem('kfh_my_ticket', newTicketNum);
 
-                        await setDoc(docRefInstance, { state: state, shouldAnnounce: false, timestamp: Date.now() });
+                            await setDoc(ref, { state: state, shouldAnnounce: false, timestamp: Date.now() });
+                        }
                     }
 
                     currentCloudState = state;
@@ -490,7 +511,9 @@
                     }
                 }
             });
-        } catch (e) {}
+        } catch (e) {
+            console.error("Firebase init error:", e);
+        }
     </script>
 </body>
 </html>
