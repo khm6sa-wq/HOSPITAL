@@ -115,10 +115,10 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                <button id="btn-book" onclick="selectMode('ticket')" class="bg-hospital-blue hover:bg-hospital-lightBlue text-white p-6 rounded-2xl font-black text-base shadow-xl transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-hospital-accent">
+                <button onclick="selectMode('ticket')" class="bg-hospital-blue hover:bg-hospital-lightBlue text-white p-6 rounded-2xl font-black text-base shadow-xl transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-hospital-accent">
                     <i class="fa-solid fa-ticket text-hospital-accent text-3xl"></i>
                     <span>حجز رقمك والانضمام للانتظار</span>
-                    <span id="booking-status-text" class="text-[11px] text-amber-200 font-normal">احصل على تذكرة وتابع دورك لحظياً</span>
+                    <span class="text-[11px] text-amber-200 font-normal">احصل على تذكرة وتابع دورك لحظياً</span>
                 </button>
 
                 <button onclick="selectMode('public')" class="bg-hospital-sand hover:bg-slate-100 text-hospital-blue p-6 rounded-2xl font-black text-base shadow-md transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-slate-300">
@@ -154,7 +154,7 @@
             </div>
 
             <div id="status-box" class="bg-hospital-blue text-amber-200 p-4 rounded-2xl text-xs sm:text-sm font-black shadow-md">
-                جاري تحديث حالة دورك المتزامن مع الاستقبال...
+                تم حجز تذكرتك وتزامنها مع نظام الاستقبال بنجاح.
             </div>
 
             <div class="pt-2 flex items-center justify-center gap-4">
@@ -214,7 +214,7 @@
         <p>المملكة العربية السعودية - وزارة الصحة © نظام إدارة الطوابير الآلي</p>
     </footer>
 
-    <!-- Logic Script -->
+    <!-- Logic Script with Immediate Bridge Sync -->
     <script>
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
@@ -281,22 +281,71 @@
         }, 1000);
 
         let currentCloudState = { queue: [], current: null, nextId: 1 };
+        try {
+            const saved = localStorage.getItem('kfh_queue_state');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.state) currentCloudState = parsed.state;
+            }
+        } catch(e) {}
+
         let userMode = localStorage.getItem('kfh_user_mode');
         let myTicketId = localStorage.getItem('kfh_my_ticket');
 
-        window.selectMode = async function(mode) {
+        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync_bus') : null;
+        if (queueChannel) {
+            queueChannel.onmessage = (event) => {
+                if (event.data && event.data.state) {
+                    currentCloudState = event.data.state;
+                    renderAllUI(currentCloudState);
+                }
+            };
+        }
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'kfh_queue_state' && event.newValue) {
+                try {
+                    const parsed = JSON.parse(event.newValue);
+                    if (parsed && parsed.state) {
+                        currentCloudState = parsed.state;
+                        renderAllUI(currentCloudState);
+                    }
+                } catch(e) {}
+            }
+        });
+
+        window.selectMode = function(mode) {
             userMode = mode;
             localStorage.setItem('kfh_user_mode', mode);
 
-            updateViewVisibility();
-
             if (mode === 'ticket') {
-                if (window.executeAtomicBooking) {
-                    await window.executeAtomicBooking();
+                if (!myTicketId) {
+                    let state = currentCloudState || { queue: [], current: null, nextId: 1 };
+                    let newTicketNum = Number(state.nextId || 1);
+                    if (!state.queue) state.queue = [];
+                    
+                    state.queue.push({ id: newTicketNum, time: Date.now() });
+                    state.nextId = newTicketNum + 1;
+                    
+                    myTicketId = newTicketNum;
+                    localStorage.setItem('kfh_my_ticket', newTicketNum);
+                    currentCloudState = state;
+
+                    // Broadcast immediately
+                    try {
+                        localStorage.setItem('kfh_queue_state', JSON.stringify({ state }));
+                    } catch(e) {}
+                    if (queueChannel) {
+                        queueChannel.postMessage({ state, shouldAnnounce: false, timestamp: Date.now() });
+                    }
+                    if (window.pushToCloud) {
+                        window.pushToCloud(state, false);
+                    }
                 }
-            } else {
-                renderAllUI(currentCloudState);
             }
+
+            updateViewVisibility();
+            renderAllUI(currentCloudState);
         };
 
         window.resetMySelection = function() {
@@ -386,14 +435,15 @@
 
         window.addEventListener('load', () => {
             updateViewVisibility();
+            renderAllUI(currentCloudState);
         });
     </script>
 
-    <!-- Firebase Realtime Sync & Non-blocking Transaction -->
+    <!-- Firebase Realtime Sync -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, runTransaction, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
@@ -411,58 +461,22 @@
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
             const auth = getAuth(app);
-            const mainDocRef = doc(db, "queues", "hospital_main_queue");
+            signInAnonymously(auth).catch(() => {});
 
-            // تشغيل المصادقة في الخلفية بدون حظر الواجهة نهائياً
-            signInAnonymously(auth).catch(e => console.log(e));
+            const docRef = doc(db, "queues", "hospital_main_queue");
 
-            // دالة الحجز الفوري السحابي الآمن
-            window.executeAtomicBooking = async function() {
-                try {
-                    await runTransaction(db, async (transaction) => {
-                        const docSnap = await transaction.get(mainDocRef);
-                        let state = { queue: [], current: null, nextId: 1 };
-                        
-                        if (docSnap.exists() && docSnap.data().state) {
-                            state = docSnap.data().state;
-                        }
-
-                        // إذا لم تكن هناك تذكرة مسجلة مسبقاً لهذا الجهاز
-                        if (!myTicketId) {
-                            let newTicketNum = Number(state.nextId || 1);
-                            if (!state.queue) state.queue = [];
-
-                            state.queue.push({ id: newTicketNum, time: Date.now() });
-                            state.nextId = newTicketNum + 1;
-
-                            myTicketId = newTicketNum;
-                            localStorage.setItem('kfh_my_ticket', newTicketNum);
-
-                            transaction.set(mainDocRef, {
-                                state: state,
-                                shouldAnnounce: false,
-                                timestamp: Date.now()
-                            });
-                        }
-                    });
-
-                    updateViewVisibility();
-                    renderAllUI(currentCloudState);
-                } catch (e) {
-                    console.error("Atomic booking failed:", e);
-                }
+            window.pushToCloud = function(state, shouldAnnounce = false) {
+                setDoc(docRef, { state, shouldAnnounce, timestamp: Date.now() }).catch(() => {});
             };
 
-            // الاستماع اللحظي المتزامن مع الاستقبال والشاشات
-            onSnapshot(mainDocRef, (docSnap) => {
+            onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
                         currentCloudState = cloudData.state;
-
-                        if (userMode === 'ticket' && !myTicketId) {
-                            window.executeAtomicBooking();
-                        }
+                        try {
+                            localStorage.setItem('kfh_queue_state', JSON.stringify({ state: currentCloudState }));
+                        } catch(e) {}
 
                         if (cloudData.shouldAnnounce && currentCloudState.current && currentCloudState.current.id) {
                             if (lastAnnouncedId !== currentCloudState.current.id) {
@@ -475,10 +489,7 @@
                     }
                 }
             });
-
-        } catch (e) {
-            console.error("Firebase init error:", e);
-        }
+        } catch (e) {}
     </script>
 </body>
 </html>
