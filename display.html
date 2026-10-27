@@ -115,10 +115,10 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                <button id="btn-book" onclick="selectMode('ticket')" class="bg-hospital-blue hover:bg-hospital-lightBlue text-white p-6 rounded-2xl font-black text-base shadow-xl transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-hospital-accent opacity-60 pointer-events-none">
+                <button id="btn-book" onclick="selectMode('ticket')" class="bg-hospital-blue hover:bg-hospital-lightBlue text-white p-6 rounded-2xl font-black text-base shadow-xl transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-hospital-accent">
                     <i class="fa-solid fa-ticket text-hospital-accent text-3xl"></i>
                     <span>حجز رقمك والانضمام للانتظار</span>
-                    <span id="booking-status-text" class="text-[11px] text-amber-200 font-normal">جاري الاتصال بالنظام الآمن...</span>
+                    <span id="booking-status-text" class="text-[11px] text-amber-200 font-normal">احصل على تذكرة وتابع دورك لحظياً</span>
                 </button>
 
                 <button onclick="selectMode('public')" class="bg-hospital-sand hover:bg-slate-100 text-hospital-blue p-6 rounded-2xl font-black text-base shadow-md transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-slate-300">
@@ -154,7 +154,7 @@
             </div>
 
             <div id="status-box" class="bg-hospital-blue text-amber-200 p-4 rounded-2xl text-xs sm:text-sm font-black shadow-md">
-                تم حجز تذكرتك وتزامنها مع نظام الاستقبال بنجاح.
+                جاري تحديث حالة دورك المتزامن مع الاستقبال...
             </div>
 
             <div class="pt-2 flex items-center justify-center gap-4">
@@ -389,7 +389,7 @@
         });
     </script>
 
-    <!-- Firebase Realtime Sync & Atomic Transactions -->
+    <!-- Firebase Realtime Sync & Non-blocking Transaction -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -413,21 +413,11 @@
             const auth = getAuth(app);
             const mainDocRef = doc(db, "queues", "hospital_main_queue");
 
-            // الانتظار الفعلي لتسجيل الدخول المجهول لضمان صلاحيات الكتابة السحابية
-            await signInAnonymously(auth);
+            // تشغيل المصادقة في الخلفية بدون حظر الواجهة نهائياً
+            signInAnonymously(auth).catch(e => console.log(e));
 
-            // تفعيل زر الحجز بمجرد جاهزية الاتصال تماماً
-            const btnBook = document.getElementById('btn-book');
-            const statusText = document.getElementById('booking-status-text');
-            if (btnBook && statusText) {
-                btnBook.classList.remove('opacity-60', 'pointer-events-none');
-                statusText.textContent = 'احصل على تذكرة وتابع دورك لحظياً';
-            }
-
-            // دالة الحجز السحابي الذري المضمون (Atomic Transaction)
+            // دالة الحجز الفوري السحابي الآمن
             window.executeAtomicBooking = async function() {
-                if (myTicketId) return; // تم الحجز مسبقاً لهذا الجهاز
-
                 try {
                     await runTransaction(db, async (transaction) => {
                         const docSnap = await transaction.get(mainDocRef);
@@ -437,39 +427,39 @@
                             state = docSnap.data().state;
                         }
 
-                        let newTicketNum = Number(state.nextId || 1);
-                        if (!state.queue) state.queue = [];
+                        // إذا لم تكن هناك تذكرة مسجلة مسبقاً لهذا الجهاز
+                        if (!myTicketId) {
+                            let newTicketNum = Number(state.nextId || 1);
+                            if (!state.queue) state.queue = [];
 
-                        // إضافة الرقم الجديد وزيادة العداد الذري بشكل آمن ومضمون
-                        state.queue.push({ id: newTicketNum, time: Date.now() });
-                        state.nextId = newTicketNum + 1;
+                            state.queue.push({ id: newTicketNum, time: Date.now() });
+                            state.nextId = newTicketNum + 1;
 
-                        myTicketId = newTicketNum;
-                        localStorage.setItem('kfh_my_ticket', newTicketNum);
+                            myTicketId = newTicketNum;
+                            localStorage.setItem('kfh_my_ticket', newTicketNum);
 
-                        transaction.set(mainDocRef, {
-                            state: state,
-                            shouldAnnounce: false,
-                            timestamp: Date.now()
-                        });
+                            transaction.set(mainDocRef, {
+                                state: state,
+                                shouldAnnounce: false,
+                                timestamp: Date.now()
+                            });
+                        }
                     });
 
                     updateViewVisibility();
                     renderAllUI(currentCloudState);
                 } catch (e) {
                     console.error("Atomic booking failed:", e);
-                    alert('تعذر إتمام الحجز السحابي، يرجى المحاولة مرة أخرى.');
                 }
             };
 
-            // الاستماع اللحظي للتحديثات القادمة من الاستقبال أو الشاشة
+            // الاستماع اللحظي المتزامن مع الاستقبال والشاشات
             onSnapshot(mainDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
                         currentCloudState = cloudData.state;
 
-                        // إذا كان المختار وضع تذكرة ولم يتم حجز رقم بعد، يتم حجز الرقم تلقائياً عبر المعامل الآمن
                         if (userMode === 'ticket' && !myTicketId) {
                             window.executeAtomicBooking();
                         }
