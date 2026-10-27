@@ -79,7 +79,7 @@
     <header class="bg-hospital-blue text-white border-b-4 border-hospital-accent shadow-2xl py-4 px-8 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             
-            <!-- الشعار يملأ الإطار بالكامل بعد إزالة الفراغات الزائدة -->
+            <!-- الشعار -->
             <div class="flex items-center space-x-5 space-x-reverse">
                 <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-hospital-accent shadow-2xl royal-glow shrink-0 flex items-center justify-center overflow-hidden bg-white">
                     <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-full h-full object-cover scale-[1.55]">
@@ -157,12 +157,8 @@
         <p>نعمل لخدمتكم دائماً - وزارة الصحة © المملكة العربية السعودية</p>
     </footer>
 
-    <!-- Audio & Firebase Sync Engine -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+    <!-- Core UI & Clock Script (Runs Independently) -->
+    <script>
         let audioCtx = null;
 
         window.initAudioContext = function() {
@@ -187,6 +183,30 @@
             }
         };
 
+        // Live Clock (12-Hour format with AM/PM) - Guaranteed to run
+        setInterval(() => {
+            try {
+                const now = new Date();
+                const clockEl = document.getElementById('live-clock');
+                const dateEl = document.getElementById('live-date');
+                
+                if(clockEl) {
+                    let hours = now.getHours();
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    const ampm = hours >= 12 ? 'م' : 'ص';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12;
+                    const formattedHours = String(hours).padStart(2, '0');
+                    clockEl.textContent = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
+                }
+
+                if(dateEl) {
+                    dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                }
+            } catch (err) {}
+        }, 1000);
+
         let state = {
             queue: [],
             current: null
@@ -194,27 +214,154 @@
 
         let lastAnnouncedId = null;
 
-        // Live Clock (12-Hour format with AM/PM)
-        setInterval(() => {
-            const now = new Date();
-            const clockEl = document.getElementById('live-clock');
-            const dateEl = document.getElementById('live-date');
-            
-            if(clockEl) {
-                let hours = now.getHours();
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                const ampm = hours >= 12 ? 'م' : 'ص';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                const formattedHours = String(hours).padStart(2, '0');
-                clockEl.textContent = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
-            }
-
-            if(dateEl) {
-                dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            }
-        }, 1000);
-
         try {
             const localSaved = localStorage.getItem('kfh_queue_state');
+            if (localSaved) {
+                const parsed = JSON.parse(localSaved);
+                if (parsed && parsed.state) {
+                    state = parsed.state;
+                    if(state.current) lastAnnouncedId = state.current.id;
+                }
+            }
+        } catch (e) {}
+
+        window.playChimeOnly = function() {
+            try {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const freqs = [659.25, 880, 1318.51];
+                freqs.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (idx * 0.15));
+                    gain.gain.setValueAtTime(0, audioCtx.currentTime + (idx * 0.15));
+                    gain.gain.linearRampToValueAtTime(0.6, audioCtx.currentTime + (idx * 0.15) + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (idx * 0.15) + 0.8);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + (idx * 0.15));
+                    osc.stop(audioCtx.currentTime + (idx * 0.15) + 0.8);
+                });
+            } catch (e) {}
+        }
+
+        window.flashLoungeDisplay = function() {
+            const loungeCard = document.getElementById('lounge-card-container');
+            if (loungeCard) {
+                loungeCard.classList.add('call-flash');
+                setTimeout(() => loungeCard.classList.remove('call-flash'), 3000);
+            }
+        }
+
+        window.renderDisplay = function() {
+            try {
+                const currentNumEl = document.getElementById('display-current-num');
+                const queueListEl = document.getElementById('display-queue-list');
+                const queueCounterEl = document.getElementById('display-queue-counter');
+                const emptyMsgEl = document.getElementById('display-empty-msg');
+
+                const currentStr = (state && state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
+                if (currentNumEl) currentNumEl.textContent = currentStr;
+                if (queueCounterEl) queueCounterEl.textContent = `${state && state.queue ? state.queue.length : 0} مراجعين`;
+
+                if (queueListEl) {
+                    queueListEl.innerHTML = '';
+                    if (!state || !state.queue || state.queue.length === 0) {
+                        if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
+                    } else {
+                        if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
+                        state.queue.forEach((patient) => {
+                            const box = document.createElement('div');
+                            box.className = "bg-hospital-sand border-2 border-hospital-accent/40 rounded-2xl p-4 text-center shadow-sm flex flex-col items-center justify-center";
+                            box.innerHTML = `
+                                <span class="text-3xl sm:text-4xl font-black text-hospital-blue">${String(patient.id).padStart(3, '0')}</span>
+                            `;
+                            queueListEl.appendChild(box);
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+
+        renderDisplay();
+
+        // Local Broadcast Channel for instant multi-tab sync
+        try {
+            const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
+            if (queueChannel) {
+                queueChannel.onmessage = (event) => {
+                    if (event.data && event.data.state) {
+                        state = event.data.state;
+                        const shouldAnnounce = event.data.shouldAnnounce;
+
+                        if (state.current && (state.current.id !== lastAnnouncedId || shouldAnnounce)) {
+                            lastAnnouncedId = state.current.id;
+                            playChimeOnly();
+                            flashLoungeDisplay();
+                        }
+
+                        renderDisplay();
+                    }
+                };
+            }
+        } catch (e) {}
+    </script>
+
+    <!-- Safe Firebase Sync Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
+            authDomain: "hospital-ba989.firebaseapp.com",
+            projectId: "hospital-ba989",
+            storageBucket: "hospital-ba989.firebasestorage.app",
+            messagingSenderId: "30608387919",
+            appId: "1:30608387919:web:ee0f83efabc514e5ff1f3a",
+            measurementId: "G-6R34PWFVWK"
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            signInAnonymously(auth).catch(() => {});
+
+            const docRef = doc(db, "queues", "hospital_main_queue");
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if (cloudData && cloudData.state) {
+                        window.state = cloudData.state;
+                        const shouldAnnounce = cloudData.shouldAnnounce;
+
+                        if (window.state.current && window.state.current.id !== window.lastAnnouncedId) {
+                            window.lastAnnouncedId = window.state.current.id;
+                            if (typeof window.playChimeOnly === 'function') window.playChimeOnly();
+                            if (typeof window.flashLoungeDisplay === 'function') window.flashLoungeDisplay();
+                        } else if (shouldAnnounce && window.state.current && window.state.current.id === window.lastAnnouncedId) {
+                            if (typeof window.playChimeOnly === 'function') window.playChimeOnly();
+                            if (typeof window.flashLoungeDisplay === 'function') window.flashLoungeDisplay();
+                        }
+
+                        if (typeof window.renderDisplay === 'function') window.renderDisplay();
+                    }
+                }
+            }, (error) => {
+                console.log("Firebase sync warning, running offline mode.");
+            });
+        } catch (e) {
+            console.log("Firebase init error, running offline mode.");
+        }
+    </script>
+</body>
+</html>
