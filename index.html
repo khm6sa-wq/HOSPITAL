@@ -82,7 +82,7 @@
                         مُسْتَشْفَى المَلِك فَيْصَل
                     </h1>
                     <span class="text-sm sm:text-base font-semibold tracking-wider text-amber-200 mt-1">
-                        King Faisal Hospital
+                        King Faisal Hospital - لوحة الاستقبال
                     </span>
                 </div>
             </div>
@@ -139,18 +139,18 @@
             <div class="bg-white rounded-3xl p-6 border-2 border-hospital-accent/40 card-shadow space-y-3 text-center">
                 <div class="text-xs font-bold text-slate-600 flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-qrcode text-hospital-accent text-sm"></i>
-                    <span>باركود متابعة شاشة العرض للمراجعين</span>
+                    <span>باركود حجز ومتابعة الدور للمراجعين</span>
                 </div>
                 
                 <div class="bg-hospital-sand border border-dashed border-hospital-accent rounded-2xl p-3 space-y-2 flex flex-col items-center">
-                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز لمتابعة الدور عبر الهاتف</div>
+                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز لحجز رقمك ومتابعة دورك</div>
                     
                     <div class="bg-white p-2 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=https://khm6sa-wq.github.io/HOSPITAL/display.html" alt="Visitor QR Code" class="w-[110px] h-[110px] object-contain">
                     </div>
 
                     <a href="display.html" target="_blank" class="text-[10px] text-hospital-blue font-bold underline hover:text-hospital-accent transition-colors">
-                        فتح شاشة العرض مباشرة
+                        فتح بوابة المراجعين مباشرة
                     </a>
                 </div>
             </div>
@@ -188,7 +188,7 @@
                 </div>
 
                 <div class="text-xs font-semibold text-slate-400">
-                    لوحة التحكم الخاصة بموظف الاستقبال (بدون أصوات).
+                    لوحة التحكم الخاصة بموظف الاستقبال (صامتة تماماً).
                 </div>
             </div>
 
@@ -218,7 +218,7 @@
         <p>لوحة التحكم بالعيادات - وزارة الصحة © المملكة العربية السعودية</p>
     </footer>
 
-    <!-- Controller Logic -->
+    <!-- Controller Script with Instant Bridge Sync -->
     <script>
         setInterval(() => {
             try {
@@ -257,7 +257,9 @@
             }
         } catch (e) {}
 
-        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
+        // Instant Broadcast Channel for immediate local tab/device sync
+        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync_bus') : null;
+        
         if (queueChannel) {
             queueChannel.onmessage = (event) => {
                 if (event.data && event.data.state) {
@@ -266,6 +268,18 @@
                 }
             };
         }
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'kfh_queue_state' && event.newValue) {
+                try {
+                    const parsed = JSON.parse(event.newValue);
+                    if (parsed && parsed.state) {
+                        state = parsed.state;
+                        renderController();
+                    }
+                } catch(e) {}
+            }
+        });
 
         window.saveAndSync = function(shouldAnnounce = false) {
             try {
@@ -299,7 +313,7 @@
             }
             const nextPatient = state.queue.shift();
             state.current = nextPatient;
-            saveAndSync(true); // يرسل إشارة لتشغيل التنبيه في شاشة العرض فقط
+            saveAndSync(true); 
         };
 
         window.recallCurrentPatient = function() {
@@ -307,7 +321,7 @@
                 alert('لا يوجد مراجع حالي لإعادة ندائه');
                 return;
             }
-            saveAndSync(true); // يرسل إشارة لتشغيل التنبيه في شاشة العرض فقط
+            saveAndSync(true); 
         };
 
         window.resetQueueSystem = function() {
@@ -384,7 +398,10 @@
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
-                        window.state = cloudData.state;
+                        state = cloudData.state;
+                        try {
+                            localStorage.setItem('kfh_queue_state', JSON.stringify({ state }));
+                        } catch(e) {}
                         if (typeof window.renderController === 'function') {
                             window.renderController();
                         }
