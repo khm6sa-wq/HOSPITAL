@@ -76,7 +76,7 @@
             </div>
 
             <div id="display-current-num" class="text-9xl sm:text-[12rem] font-black text-white tracking-tighter drop-shadow-2xl my-2">
-                ---
+                000
             </div>
 
             <div class="text-sm text-slate-300 font-bold mt-2">
@@ -134,16 +134,97 @@
         let state = { queue: [], current: null, nextId: 1 };
         let lastAnnouncedId = null;
 
-        try {
-            const localSaved = localStorage.getItem('kfh_queue_state');
-            if (localSaved) {
-                const parsed = JSON.parse(localSaved);
-                if (parsed && parsed.state) state = parsed.state;
+        function announceCurrent() {
+            if (state && state.current && state.current.id) {
+                if (lastAnnouncedId !== state.current.id) {
+                    lastAnnouncedId = state.current.id;
+                    try {
+                        if ('speechSynthesis' in window) {
+                            window.speechSynthesis.cancel();
+                            const msg = new SpeechSynthesisUtterance(`رقم المراجع ${state.current.id}`);
+                            msg.lang = 'ar-SA';
+                            msg.rate = 0.9;
+                            window.speechSynthesis.speak(msg);
+                        }
+                    } catch (e) {}
+                }
             }
-        } catch (e) {}
+        }
 
-        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
-        if (queueChannel) {
-            queueChannel.onmessage = (event) => {
-                if (event.data && event.data.state) {
-                    state = event
+        window.renderDisplay = function() {
+            try {
+                const currentNumEl = document.getElementById('display-current-num');
+                const queueListEl = document.getElementById('display-queue-list');
+                const queueCountEl = document.getElementById('display-queue-count');
+                const emptyMsgEl = document.getElementById('display-empty-msg');
+
+                const currentStr = (state && state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '000';
+                if (currentNumEl) currentNumEl.textContent = currentStr;
+                if (queueCountEl) queueCountEl.textContent = state && state.queue ? state.queue.length : 0;
+
+                if (queueListEl) {
+                    queueListEl.innerHTML = '';
+                    if (!state || !state.queue || state.queue.length === 0) {
+                        if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
+                    } else {
+                        if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
+                        state.queue.forEach((patient) => {
+                            const item = document.createElement('div');
+                            item.className = "bg-hospital-darkBlue border border-hospital-accent/30 rounded-2xl p-3.5 text-center shadow-md flex items-center justify-between px-6";
+                            item.innerHTML = `
+                                <span class="text-2xl font-black text-white">${String(patient.id).padStart(3, '0')}</span>
+                                <span class="text-xs text-amber-200 font-bold bg-amber-200/10 px-3 py-1 rounded-full border border-amber-200/20">قيد الانتظار</span>
+                            `;
+                            queueListEl.appendChild(item);
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+
+        window.addEventListener('load', () => {
+            renderDisplay();
+        });
+    </script>
+
+    <!-- Firebase Sync -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
+            authDomain: "hospital-ba989.firebaseapp.com",
+            projectId: "hospital-ba989",
+            storageBucket: "hospital-ba989.firebasestorage.app",
+            messagingSenderId: "30608387919",
+            appId: "1:30608387919:web:ee0f83efabc514e5ff1f3a",
+            measurementId: "G-6R34PWFVWK"
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            signInAnonymously(auth).catch(() => {});
+
+            const docRef = doc(db, "queues", "hospital_main_queue");
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if (cloudData && cloudData.state) {
+                        state = cloudData.state; // تم تحديث المتغير المحلي مباشرة هنا لضمان مزامنة الشاشة
+                        if (cloudData.shouldAnnounce) {
+                            announceCurrent();
+                        }
+                        if (typeof window.renderDisplay === 'function') {
+                            window.renderDisplay();
+                        }
+                    }
+                }
+            }, () => {});
+        } catch (e) {}
+    </script>
+</body>
+</html>
