@@ -454,7 +454,7 @@
             if (currentNumEl) currentNumEl.textContent = currentStr;
             if (portalCurrentNumEl) portalCurrentNumEl.textContent = currentStr;
 
-            // Handle Portal View Detection
+            // Handle Portal View Detection (Ensures QR opens the patient portal directly)
             const urlParams = new URLSearchParams(window.location.search);
             const isPortal = urlParams.get('mode') === 'portal' || window.location.hash === '#portal';
 
@@ -502,6 +502,9 @@
                     if (successBox) successBox.classList.add('hidden');
                     if (formBox) formBox.classList.remove('hidden');
                 }
+            } else {
+                document.getElementById('view-reception').classList.remove('hidden');
+                document.getElementById('view-patient-portal').classList.add('hidden');
             }
 
             if (waitingCountEl) waitingCountEl.textContent = state.queue.length;
@@ -562,116 +565,3 @@
             const nameVal = nameInput ? nameInput.value.trim() : '';
 
             state.ticketCounter++;
-            const newPatient = {
-                id: state.ticketCounter,
-                name: nameVal,
-                time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
-            };
-
-            state.queue.push(newPatient);
-            if (nameInput) nameInput.value = '';
-            syncState(false);
-        };
-
-        window.handlePatientPortalSubmit = function(e) {
-            if (e) e.preventDefault();
-            const nameInput = document.getElementById('portal-patient-name');
-            const nameVal = nameInput ? nameInput.value.trim() : '';
-
-            state.ticketCounter++;
-            const newPatient = {
-                id: state.ticketCounter,
-                name: nameVal,
-                time: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
-            };
-
-            state.queue.push(newPatient);
-            myActiveTicketId = newPatient.id;
-            try { localStorage.setItem('kfh_my_ticket', myActiveTicketId); } catch(err) {}
-
-            syncState(false);
-
-            document.getElementById('patient-portal-form').classList.add('hidden');
-            const successBox = document.getElementById('ticket-success-box');
-            successBox.classList.remove('hidden');
-            document.getElementById('my-ticket-number').textContent = String(newPatient.id).padStart(3, '0');
-            renderApp();
-        };
-
-        window.resetPatientPortalForm = function() {
-            myActiveTicketId = null;
-            try { localStorage.removeItem('kfh_my_ticket'); } catch(e){}
-            const nameInput = document.getElementById('portal-patient-name');
-            if (nameInput) nameInput.value = '';
-            document.getElementById('ticket-success-box').classList.add('hidden');
-            document.getElementById('patient-portal-form').classList.remove('hidden');
-        };
-
-        window.callNextPatient = function() {
-            if (state.queue.length === 0) {
-                alert("لا يوجد مراجعين في قائمة الانتظار حالياً.");
-                return;
-            }
-            const nextPatient = state.queue.shift();
-            state.current = { id: nextPatient.id };
-            state.servedCount++;
-            playChime();
-            syncState(true);
-        };
-
-        window.recallCurrentPatient = function() {
-            if (!state.current || !state.current.id) {
-                alert("لا يوجد رقم حالي لإعادة المناداة.");
-                return;
-            }
-            playChime();
-            syncState(true);
-        };
-
-        window.skipCurrentPatient = function() {
-            if (!state.current) return;
-            state.current = null;
-            syncState(false);
-        };
-
-        window.removePatient = function(index) {
-            state.queue.splice(index, 1);
-            syncState(false);
-        };
-
-        window.resetQueue = function() {
-            if (confirm("هل أنت متأكد من إعادة تصفير قائمة الانتظار تماماً والبدء من الرقم 1؟")) {
-                state.queue = [];
-                state.current = null;
-                state.ticketCounter = 0;
-                state.servedCount = 0;
-                myActiveTicketId = null;
-                try { localStorage.removeItem('kfh_my_ticket'); } catch(e){}
-                syncState(false);
-            }
-        };
-
-        window.testAudio = function() {
-            playChime();
-        };
-
-        try {
-            const qrContainer = document.getElementById('qrcode-container');
-            if (qrContainer && typeof QRCode !== 'undefined') {
-                qrContainer.innerHTML = '';
-                const portalUrl = window.location.origin + window.location.pathname + '?mode=portal';
-                new QRCode(qrContainer, {
-                    text: portalUrl,
-                    width: 110,
-                    height: 110,
-                    colorDark: "#004B25",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            }
-        } catch (e) {}
-
-        renderApp();
-    </script>
-</body>
-</html>
