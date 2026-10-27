@@ -79,11 +79,9 @@
     <header class="bg-hospital-blue text-white border-b-4 border-hospital-accent shadow-2xl py-4 px-8 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             
-            <!-- الشعار بحجم كبير وفخم بجانب الاسم -->
+            <!-- الشعار يملأ المساحة بالكامل وبشكل واضح -->
             <div class="flex items-center space-x-5 space-x-reverse">
-                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white p-1.5 border-3 border-hospital-accent shadow-2xl royal-glow shrink-0 flex items-center justify-center overflow-hidden">
-                    <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-full h-full object-contain">
-                </div>
+                <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-hospital-accent shadow-2xl royal-glow shrink-0">
 
                 <div class="flex flex-col justify-center">
                     <h1 class="text-3xl sm:text-4xl font-bold font-amiri tracking-tight text-white drop-shadow-md">
@@ -233,121 +231,4 @@
             projectId: "hospital-ba989",
             storageBucket: "hospital-ba989.firebasestorage.app",
             messagingSenderId: "30608387919",
-            appId: "1:30608387919:web:ee0f83efabc514e5ff1f3a",
-            measurementId: "G-6R34PWFVWK"
-        };
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            const auth = getAuth(app);
-            signInAnonymously(auth).catch(() => {});
-
-            const docRef = doc(db, "queues", "hospital_main_queue");
-            onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const cloudData = docSnap.data();
-                    if (cloudData && cloudData.state) {
-                        state = cloudData.state;
-                        const shouldAnnounce = cloudData.shouldAnnounce;
-
-                        if (state.current && state.current.id !== lastAnnouncedId) {
-                            lastAnnouncedId = state.current.id;
-                            playChimeOnly();
-                            flashLoungeDisplay();
-                        } else if (shouldAnnounce && state.current && state.current.id === lastAnnouncedId) {
-                            playChimeOnly();
-                            flashLoungeDisplay();
-                        }
-
-                        renderDisplay();
-                    }
-                }
-            }, () => {});
-        } catch (e) {}
-
-        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
-        if (queueChannel) {
-            queueChannel.onmessage = (event) => {
-                if (event.data && event.data.state) {
-                    state = event.data.state;
-                    const shouldAnnounce = event.data.shouldAnnounce;
-
-                    if (state.current && (state.current.id !== lastAnnouncedId || shouldAnnounce)) {
-                        lastAnnouncedId = state.current.id;
-                        playChimeOnly();
-                        flashLoungeDisplay();
-                    }
-
-                    renderDisplay();
-                }
-            };
-        }
-
-        function playChimeOnly() {
-            try {
-                if (!audioCtx) {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    audioCtx = new AudioContext();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-
-                const freqs = [659.25, 880, 1318.51];
-                freqs.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (idx * 0.15));
-                    gain.gain.setValueAtTime(0, audioCtx.currentTime + (idx * 0.15));
-                    gain.gain.linearRampToValueAtTime(0.6, audioCtx.currentTime + (idx * 0.15) + 0.03);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (idx * 0.15) + 0.8);
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start(audioCtx.currentTime + (idx * 0.15));
-                    osc.stop(audioCtx.currentTime + (idx * 0.15) + 0.8);
-                });
-            } catch (e) {}
-        }
-
-        function flashLoungeDisplay() {
-            const loungeCard = document.getElementById('lounge-card-container');
-            if (loungeCard) {
-                loungeCard.classList.add('call-flash');
-                setTimeout(() => loungeCard.classList.remove('call-flash'), 3000);
-            }
-        }
-
-        function renderDisplay() {
-            const currentNumEl = document.getElementById('display-current-num');
-            const queueListEl = document.getElementById('display-queue-list');
-            const queueCounterEl = document.getElementById('display-queue-counter');
-            const emptyMsgEl = document.getElementById('display-empty-msg');
-
-            const currentStr = state.current ? String(state.current.id).padStart(3, '0') : '---';
-            if (currentNumEl) currentNumEl.textContent = currentStr;
-            if (queueCounterEl) queueCounterEl.textContent = `${state.queue.length} مراجعين`;
-
-            if (queueListEl) {
-                queueListEl.innerHTML = '';
-                if (state.queue.length === 0) {
-                    if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
-                } else {
-                    if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
-                    state.queue.forEach((patient) => {
-                        const box = document.createElement('div');
-                        box.className = "bg-hospital-sand border-2 border-hospital-accent/40 rounded-2xl p-4 text-center shadow-sm flex flex-col items-center justify-center";
-                        box.innerHTML = `
-                            <span class="text-3xl sm:text-4xl font-black text-hospital-blue">${String(patient.id).padStart(3, '0')}</span>
-                        `;
-                        queueListEl.appendChild(box);
-                    });
-                }
-            }
-        }
-
-        renderDisplay();
-    </script>
-</body>
-</html>
+            appId: "1:30608387919:web:ee0f83efabc514e5ff
