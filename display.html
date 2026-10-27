@@ -115,10 +115,10 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                <button onclick="selectMode('ticket')" class="bg-hospital-blue hover:bg-hospital-lightBlue text-white p-6 rounded-2xl font-black text-base shadow-xl transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-hospital-accent">
+                <button id="btn-book" onclick="selectMode('ticket')" class="bg-hospital-blue hover:bg-hospital-lightBlue text-white p-6 rounded-2xl font-black text-base shadow-xl transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-hospital-accent opacity-60 pointer-events-none">
                     <i class="fa-solid fa-ticket text-hospital-accent text-3xl"></i>
                     <span>حجز رقمك والانضمام للانتظار</span>
-                    <span class="text-[11px] text-amber-200 font-normal">احصل على تذكرة وتابع دورك لحظياً</span>
+                    <span id="booking-status-text" class="text-[11px] text-amber-200 font-normal">جاري الاتصال بالنظام الآمن...</span>
                 </button>
 
                 <button onclick="selectMode('public')" class="bg-hospital-sand hover:bg-slate-100 text-hospital-blue p-6 rounded-2xl font-black text-base shadow-md transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-slate-300">
@@ -154,7 +154,7 @@
             </div>
 
             <div id="status-box" class="bg-hospital-blue text-amber-200 p-4 rounded-2xl text-xs sm:text-sm font-black shadow-md">
-                جاري تحديث حالة دورك...
+                تم حجز تذكرتك وتزامنها مع نظام الاستقبال بنجاح.
             </div>
 
             <div class="pt-2 flex items-center justify-center gap-4">
@@ -291,21 +291,8 @@
             updateViewVisibility();
 
             if (mode === 'ticket') {
-                if (window.executeTicketBooking) {
-                    await window.executeTicketBooking();
-                } else {
-                    // Fallback فوري لو لم تكتمل قاعدة البيانات بعد
-                    let state = currentCloudState || { queue: [], current: null, nextId: 1 };
-                    if (!myTicketId) {
-                        let newTicketNum = Number(state.nextId || 1);
-                        if (!state.queue) state.queue = [];
-                        state.queue.push({ id: newTicketNum, time: Date.now() });
-                        state.nextId = newTicketNum + 1;
-                        myTicketId = newTicketNum;
-                        localStorage.setItem('kfh_my_ticket', newTicketNum);
-                        currentCloudState = state;
-                    }
-                    renderAllUI(currentCloudState);
+                if (window.executeAtomicBooking) {
+                    await window.executeAtomicBooking();
                 }
             } else {
                 renderAllUI(currentCloudState);
@@ -348,7 +335,6 @@
                 const myTicketEl = document.getElementById('my-ticket-num');
                 const currentEl = document.getElementById('ticket-current');
                 const aheadEl = document.getElementById('ticket-ahead');
-                const statusBox = document.getElementById('status-box');
 
                 if (myTicketEl) myTicketEl.textContent = myTicketId ? String(myTicketId).padStart(3, '0') : '---';
                 const currentStr = (state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
@@ -368,28 +354,6 @@
                     }
                 }
                 if (aheadEl) aheadEl.textContent = aheadCount >= 0 ? aheadCount : 0;
-
-                if (state.current && String(state.current.id) === String(myTicketId)) {
-                    if (statusBox) {
-                        statusBox.innerHTML = '<i class="fa-solid fa-bell ml-2 animate-bounce"></i> دورك الآن! يرجى التوجه إلى العيادة فوراً';
-                        statusBox.className = 'bg-amber-400 text-hospital-darkBlue p-4 rounded-2xl text-sm font-black shadow-md animate-pulse';
-                    }
-                } else if (aheadCount === 0 && myTicketId) {
-                    if (statusBox) {
-                        statusBox.textContent = 'أنت التالي في الدور! استعد للخدمة قريباً.';
-                        statusBox.className = 'bg-hospital-lightBlue text-white p-4 rounded-2xl text-xs sm:text-sm font-bold shadow-md';
-                    }
-                } else if (aheadCount < 0) {
-                    if (statusBox) {
-                        statusBox.textContent = 'تمت خدمة تذكرتك مسبقاً. نتمنى لك دوام الصحة والعافية.';
-                        statusBox.className = 'bg-slate-600 text-white p-4 rounded-2xl text-xs sm:text-sm font-bold shadow-md';
-                    }
-                } else {
-                    if (statusBox) {
-                        statusBox.textContent = `تم حجز تذكرتك بنجاح. يوجد ${aheadCount} مراجعين قبلك في الانتظار والأرقام تتحرك تباعاً.`;
-                        statusBox.className = 'bg-hospital-blue text-amber-200 p-4 rounded-2xl text-xs sm:text-sm font-bold shadow-md';
-                    }
-                }
             }
 
             if (userMode === 'public') {
@@ -425,11 +389,11 @@
         });
     </script>
 
-    <!-- Firebase Realtime Sync & Non-blocking Initialization -->
+    <!-- Firebase Realtime Sync & Atomic Transactions -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, runTransaction, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
@@ -449,75 +413,65 @@
             const auth = getAuth(app);
             const mainDocRef = doc(db, "queues", "hospital_main_queue");
 
-            // تسجيل دخول غير حازم لعدم إيقاف التنفيذ
-            signInAnonymously(auth).catch(e => console.log(e));
+            // الانتظار الفعلي لتسجيل الدخول المجهول لضمان صلاحيات الكتابة السحابية
+            await signInAnonymously(auth);
 
-            window.executeTicketBooking = async function() {
+            // تفعيل زر الحجز بمجرد جاهزية الاتصال تماماً
+            const btnBook = document.getElementById('btn-book');
+            const statusText = document.getElementById('booking-status-text');
+            if (btnBook && statusText) {
+                btnBook.classList.remove('opacity-60', 'pointer-events-none');
+                statusText.textContent = 'احصل على تذكرة وتابع دورك لحظياً';
+            }
+
+            // دالة الحجز السحابي الذري المضمون (Atomic Transaction)
+            window.executeAtomicBooking = async function() {
+                if (myTicketId) return; // تم الحجز مسبقاً لهذا الجهاز
+
                 try {
-                    const statusBox = document.getElementById('status-box');
-                    if (statusBox) statusBox.textContent = 'جاري حجز رقمك وإرساله لنظام الاستقبال...';
+                    await runTransaction(db, async (transaction) => {
+                        const docSnap = await transaction.get(mainDocRef);
+                        let state = { queue: [], current: null, nextId: 1 };
+                        
+                        if (docSnap.exists() && docSnap.data().state) {
+                            state = docSnap.data().state;
+                        }
 
-                    let docSnap;
-                    try {
-                        docSnap = await getDoc(mainDocRef);
-                    } catch (err) {
-                        docSnap = { exists: () => false };
-                    }
-
-                    let state = { queue: [], current: null, nextId: 1 };
-                    if (docSnap.exists() && docSnap.data().state) {
-                        state = docSnap.data().state;
-                    }
-
-                    if (!myTicketId) {
                         let newTicketNum = Number(state.nextId || 1);
                         if (!state.queue) state.queue = [];
-                        
-                        const exists = state.queue.some(p => p.id === newTicketNum) || (state.current && state.current.id === newTicketNum);
-                        if (!exists) {
-                            state.queue.push({ id: newTicketNum, time: Date.now() });
-                            state.nextId = newTicketNum + 1;
-                            
-                            myTicketId = newTicketNum;
-                            localStorage.setItem('kfh_my_ticket', newTicketNum);
 
-                            await setDoc(mainDocRef, { 
-                                state: state, 
-                                shouldAnnounce: false, 
-                                timestamp: Date.now() 
-                            });
-                        }
-                    }
+                        // إضافة الرقم الجديد وزيادة العداد الذري بشكل آمن ومضمون
+                        state.queue.push({ id: newTicketNum, time: Date.now() });
+                        state.nextId = newTicketNum + 1;
 
-                    currentCloudState = state;
+                        myTicketId = newTicketNum;
+                        localStorage.setItem('kfh_my_ticket', newTicketNum);
+
+                        transaction.set(mainDocRef, {
+                            state: state,
+                            shouldAnnounce: false,
+                            timestamp: Date.now()
+                        });
+                    });
+
                     updateViewVisibility();
                     renderAllUI(currentCloudState);
                 } catch (e) {
-                    console.error("Booking execution error:", e);
-                    // Fallback فوري محلي لتجاوز أي مشكلة شبكة
-                    let state = currentCloudState || { queue: [], current: null, nextId: 1 };
-                    if (!myTicketId) {
-                        let newTicketNum = Number(state.nextId || 1);
-                        if (!state.queue) state.queue = [];
-                        state.queue.push({ id: newTicketNum, time: Date.now() });
-                        state.nextId = newTicketNum + 1;
-                        myTicketId = newTicketNum;
-                        localStorage.setItem('kfh_my_ticket', newTicketNum);
-                        currentCloudState = state;
-                    }
-                    updateViewVisibility();
-                    renderAllUI(currentCloudState);
+                    console.error("Atomic booking failed:", e);
+                    alert('تعذر إتمام الحجز السحابي، يرجى المحاولة مرة أخرى.');
                 }
             };
 
+            // الاستماع اللحظي للتحديثات القادمة من الاستقبال أو الشاشة
             onSnapshot(mainDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
                         currentCloudState = cloudData.state;
 
+                        // إذا كان المختار وضع تذكرة ولم يتم حجز رقم بعد، يتم حجز الرقم تلقائياً عبر المعامل الآمن
                         if (userMode === 'ticket' && !myTicketId) {
-                            window.executeTicketBooking();
+                            window.executeAtomicBooking();
                         }
 
                         if (cloudData.shouldAnnounce && currentCloudState.current && currentCloudState.current.id) {
@@ -530,11 +484,10 @@
                         renderAllUI(currentCloudState);
                     }
                 }
-            }, (error) => {
-                console.log("Snapshot error:", error);
             });
+
         } catch (e) {
-            console.error("Firebase module init error:", e);
+            console.error("Firebase init error:", e);
         }
     </script>
 </body>
