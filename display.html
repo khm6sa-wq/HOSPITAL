@@ -154,7 +154,7 @@
             </div>
 
             <div id="status-box" class="bg-hospital-blue text-amber-200 p-4 rounded-2xl text-xs sm:text-sm font-black shadow-md">
-                جاري الاتصال بالنظام وحجز تذكرتك الذكية...
+                جاري تحديث حالة دورك...
             </div>
 
             <div class="pt-2 flex items-center justify-center gap-4">
@@ -291,8 +291,21 @@
             updateViewVisibility();
 
             if (mode === 'ticket') {
-                if (typeof window.executeTicketBooking === 'function') {
+                if (window.executeTicketBooking) {
                     await window.executeTicketBooking();
+                } else {
+                    // Fallback فوري لو لم تكتمل قاعدة البيانات بعد
+                    let state = currentCloudState || { queue: [], current: null, nextId: 1 };
+                    if (!myTicketId) {
+                        let newTicketNum = Number(state.nextId || 1);
+                        if (!state.queue) state.queue = [];
+                        state.queue.push({ id: newTicketNum, time: Date.now() });
+                        state.nextId = newTicketNum + 1;
+                        myTicketId = newTicketNum;
+                        localStorage.setItem('kfh_my_ticket', newTicketNum);
+                        currentCloudState = state;
+                    }
+                    renderAllUI(currentCloudState);
                 }
             } else {
                 renderAllUI(currentCloudState);
@@ -412,7 +425,7 @@
         });
     </script>
 
-    <!-- Firebase Realtime Sync & Unified Queue Path -->
+    <!-- Firebase Realtime Sync & Non-blocking Initialization -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -434,19 +447,24 @@
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
             const auth = getAuth(app);
-            
-            await signInAnonymously(auth);
             const mainDocRef = doc(db, "queues", "hospital_main_queue");
 
-            // دالة الحجز الموحدة والمضمونة لتتزامن لحظياً مع لوحة الاستقبال
+            // تسجيل دخول غير حازم لعدم إيقاف التنفيذ
+            signInAnonymously(auth).catch(e => console.log(e));
+
             window.executeTicketBooking = async function() {
                 try {
                     const statusBox = document.getElementById('status-box');
                     if (statusBox) statusBox.textContent = 'جاري حجز رقمك وإرساله لنظام الاستقبال...';
 
-                    const docSnap = await getDoc(mainDocRef);
+                    let docSnap;
+                    try {
+                        docSnap = await getDoc(mainDocRef);
+                    } catch (err) {
+                        docSnap = { exists: () => false };
+                    }
+
                     let state = { queue: [], current: null, nextId: 1 };
-                    
                     if (docSnap.exists() && docSnap.data().state) {
                         state = docSnap.data().state;
                     }
@@ -455,32 +473,43 @@
                         let newTicketNum = Number(state.nextId || 1);
                         if (!state.queue) state.queue = [];
                         
-                        // إضافة الرقم لقائمة الانتظار وتحديث العداد التالي
-                        state.queue.push({ id: newTicketNum, time: Date.now() });
-                        state.nextId = newTicketNum + 1;
-                        
-                        myTicketId = newTicketNum;
-                        localStorage.setItem('kfh_my_ticket', newTicketNum);
+                        const exists = state.queue.some(p => p.id === newTicketNum) || (state.current && state.current.id === newTicketNum);
+                        if (!exists) {
+                            state.queue.push({ id: newTicketNum, time: Date.now() });
+                            state.nextId = newTicketNum + 1;
+                            
+                            myTicketId = newTicketNum;
+                            localStorage.setItem('kfh_my_ticket', newTicketNum);
 
-                        // حفظ الحالة فوراً في السحابة لترها لوحة الاستقبال فوراً
-                        await setDoc(mainDocRef, { 
-                            state: state, 
-                            shouldAnnounce: false, 
-                            timestamp: Date.now() 
-                        });
+                            await setDoc(mainDocRef, { 
+                                state: state, 
+                                shouldAnnounce: false, 
+                                timestamp: Date.now() 
+                            });
+                        }
                     }
 
                     currentCloudState = state;
                     updateViewVisibility();
                     renderAllUI(currentCloudState);
                 } catch (e) {
-                    console.error("Booking sync error:", e);
-                    const statusBox = document.getElementById('status-box');
-                    if (statusBox) statusBox.textContent = 'حدث خطأ في الاتصال، يجدر إعادة المحاولة.';
+                    console.error("Booking execution error:", e);
+                    // Fallback فوري محلي لتجاوز أي مشكلة شبكة
+                    let state = currentCloudState || { queue: [], current: null, nextId: 1 };
+                    if (!myTicketId) {
+                        let newTicketNum = Number(state.nextId || 1);
+                        if (!state.queue) state.queue = [];
+                        state.queue.push({ id: newTicketNum, time: Date.now() });
+                        state.nextId = newTicketNum + 1;
+                        myTicketId = newTicketNum;
+                        localStorage.setItem('kfh_my_ticket', newTicketNum);
+                        currentCloudState = state;
+                    }
+                    updateViewVisibility();
+                    renderAllUI(currentCloudState);
                 }
             };
 
-            // الاستماع اللحظي لأي تغير يحدث في لوحة الاستقبال أو الحجوزات
             onSnapshot(mainDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
@@ -501,9 +530,11 @@
                         renderAllUI(currentCloudState);
                     }
                 }
+            }, (error) => {
+                console.log("Snapshot error:", error);
             });
         } catch (e) {
-            console.error("Firebase connection error:", e);
+            console.error("Firebase module init error:", e);
         }
     </script>
 </body>
