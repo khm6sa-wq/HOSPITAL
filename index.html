@@ -74,7 +74,6 @@
     <header class="bg-hospital-blue text-white border-b-4 border-hospital-accent shadow-2xl py-4 px-8 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             
-            <!-- الشعار بدون كلمة التحكم -->
             <div class="flex items-center space-x-5 space-x-reverse">
                 <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-hospital-accent shadow-2xl royal-glow shrink-0 flex items-center justify-center overflow-hidden bg-white">
                     <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-full h-full object-cover scale-[1.55]">
@@ -150,7 +149,9 @@
                     <div id="ticket-number-preview" class="text-4xl font-black text-hospital-blue">001</div>
                     
                     <!-- Dynamic QR Code Container -->
-                    <div id="qrcode-container" class="bg-white p-3 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center"></div>
+                    <div class="bg-white p-3 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center">
+                        <div id="qrcode"></div>
+                    </div>
                     
                     <div class="text-[10px] text-slate-500 font-medium">امسح الرمز لمتابعة رقم الدور</div>
                 </div>
@@ -223,7 +224,7 @@
 
     <!-- Independent Controller Core Script -->
     <script>
-        // Live Clock (12-Hour format with AM/PM) - Guaranteed Execution
+        // Live Clock (12-Hour format with AM/PM)
         setInterval(() => {
             try {
                 const now = new Date();
@@ -323,6 +324,8 @@
             }
         };
 
+        let qrCreated = false;
+
         window.renderController = function() {
             try {
                 const currentNumEl = document.getElementById('ctrl-current-num');
@@ -332,7 +335,7 @@
                 const statWaitingEl = document.getElementById('stat-waiting');
                 const statNextIdEl = document.getElementById('stat-next-id');
                 const ticketNumPreview = document.getElementById('ticket-number-preview');
-                const qrContainer = document.getElementById('qrcode-container');
+                const qrContainer = document.getElementById('qrcode');
 
                 const currentStr = (state && state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
                 if (currentNumEl) currentNumEl.textContent = currentStr;
@@ -346,7 +349,7 @@
                 if (qrContainer) {
                     qrContainer.innerHTML = '';
                     try {
-                        const qrText = `https://king-faisal-hospital-queue.local/ticket?no=${previewIdStr}`;
+                        const qrText = `https://king-faisal-hospital.local/ticket/${previewIdStr}`;
                         new QRCode(qrContainer, {
                             text: qrText,
                             width: 90,
@@ -355,7 +358,7 @@
                             colorLight: "#ffffff",
                             correctLevel: QRCode.CorrectLevel.H
                         });
-                    } catch (e) {}
+                    } catch (err) {}
                 }
 
                 if (queueListEl) {
@@ -378,7 +381,10 @@
             } catch (e) {}
         }
 
-        renderController();
+        // Initial render after window load to ensure QR library is ready
+        window.addEventListener('load', () => {
+            renderController();
+        });
     </script>
 
     <!-- Safe Firebase Sync Script -->
