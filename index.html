@@ -10,8 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- QRCode Generator Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -106,7 +104,7 @@
     <!-- Main Controller Area -->
     <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow grid grid-cols-1 md:grid-cols-3 gap-8">
 
-        <!-- Left Column: Actions & Visitor QR (1 Column) -->
+        <!-- Left Column: Actions & Static QR Code (1 Column) -->
         <div class="space-y-6 md:col-span-1">
             
             <!-- Actions Card -->
@@ -137,22 +135,22 @@
                 </button>
             </div>
 
-            <!-- Visitor QR Code Card -->
+            <!-- Static QR Code Card (Direct Stable Image) -->
             <div class="bg-white rounded-3xl p-6 border-2 border-hospital-accent/40 card-shadow space-y-3 text-center">
                 <div class="text-xs font-bold text-slate-600 flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-qrcode text-hospital-accent text-sm"></i>
-                    <span>باركود متابعة دور المراجع</span>
+                    <span>باركود متابعة شاشة العرض للمراجعين</span>
                 </div>
                 
                 <div class="bg-hospital-sand border border-dashed border-hospital-accent rounded-2xl p-3 space-y-2 flex flex-col items-center">
-                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز لمتابعة دورك وتذكرتك</div>
+                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز لمتابعة الدور عبر الهاتف</div>
                     
-                    <!-- QR Container -->
-                    <div class="bg-white p-2.5 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center">
-                        <div id="visitor-qrcode"></div>
+                    <!-- Direct QR Image (Guaranteed to render without errors) -->
+                    <div class="bg-white p-2 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=https://khm6sa-wq.github.io/HOSPITAL/display.html" alt="Visitor QR Code" class="w-[110px] h-[110px] object-contain">
                     </div>
 
-                    <a id="visitor-link-btn" href="#" target="_blank" class="text-[10px] text-hospital-blue font-bold underline hover:text-hospital-accent transition-colors">
+                    <a href="display.html" target="_blank" class="text-[10px] text-hospital-blue font-bold underline hover:text-hospital-accent transition-colors">
                         فتح شاشة العرض مباشرة
                     </a>
                 </div>
@@ -192,7 +190,7 @@
                 </div>
 
                 <div class="text-xs font-semibold text-slate-400">
-                    يتم إصدار التذاكر عبر الاستقبال وتحديث شاشة العرض تلقائياً.
+                    يتم إدارة الأدوار من هنا وتتحدث شاشة العرض والواتساب أو الهواتف المرتبطة فوراً.
                 </div>
             </div>
 
@@ -330,33 +328,12 @@
                 const emptyMsgEl = document.getElementById('ctrl-empty-msg');
                 const statWaitingEl = document.getElementById('stat-waiting');
                 const statNextIdEl = document.getElementById('stat-next-id');
-                const visitorQrContainer = document.getElementById('visitor-qrcode');
-                const visitorLinkBtn = document.getElementById('visitor-link-btn');
 
                 const currentStr = (state && state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
                 if (currentNumEl) currentNumEl.textContent = currentStr;
                 if (queueCounterEl) queueCounterEl.textContent = `${state && state.queue ? state.queue.length : 0} مراجعين`;
                 if (statWaitingEl) statWaitingEl.textContent = state && state.queue ? state.queue.length : 0;
                 if (statNextIdEl) statNextIdEl.textContent = String(state && state.nextId ? state.nextId : 1).padStart(3, '0');
-
-                // Dynamic QR Code passing the upcoming ticket number to display.html
-                if (visitorQrContainer) {
-                    visitorQrContainer.innerHTML = '';
-                    try {
-                        const nextIdVal = state && state.nextId ? state.nextId : 1;
-                        const visitorUrl = `https://khm6sa-wq.github.io/HOSPITAL/display.html?ticket=${nextIdVal}`;
-                        if (visitorLinkBtn) visitorLinkBtn.href = visitorUrl;
-
-                        new QRCode(visitorQrContainer, {
-                            text: visitorUrl,
-                            width: 95,
-                            height: 95,
-                            colorDark: "#0F3759",
-                            colorLight: "#ffffff",
-                            correctLevel: QRCode.CorrectLevel.H
-                        });
-                    } catch (err) {}
-                }
 
                 if (queueListEl) {
                     queueListEl.innerHTML = '';
@@ -368,7 +345,7 @@
                             const box = document.createElement('div');
                             box.className = "bg-hospital-sand border border-hospital-accent/30 rounded-xl p-3 text-center shadow-xs flex items-center justify-between px-4";
                             box.innerHTML = `
-                                <span class="text-xl font-black text-hospital-blue">${String(patient.id).padStart(3, '0')}</span>
+                                <span class="text-xl font-style font-black text-hospital-blue">${String(patient.id).padStart(3, '0')}</span>
                                 <span class="text-[10px] text-slate-400 font-bold">انتظار</span>
                             `;
                             queueListEl.appendChild(box);
