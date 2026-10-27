@@ -106,7 +106,7 @@
     <!-- Main Controller Area -->
     <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow grid grid-cols-1 md:grid-cols-3 gap-8">
 
-        <!-- Left Column: Actions & Ticket QR Preview (1 Column) -->
+        <!-- Left Column: Actions & Visitor Ticket QR (1 Column) -->
         <div class="space-y-6 md:col-span-1">
             
             <!-- Actions Card -->
@@ -137,23 +137,24 @@
                 </button>
             </div>
 
-            <!-- Ticket & QR Code Preview Card -->
+            <!-- New Visitor Self-Service QR Code Card -->
             <div class="bg-white rounded-3xl p-6 border-2 border-hospital-accent/40 card-shadow space-y-3 text-center">
-                <div class="text-xs font-bold text-slate-400 flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-qrcode text-hospital-accent"></i>
-                    <span>باركود تذكرة المراجع (QR Code)</span>
+                <div class="text-xs font-bold text-slate-600 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-mobile-screen-button text-hospital-accent text-sm"></i>
+                    <span>باركود حجز المراجع الذاتي</span>
                 </div>
                 
-                <div class="bg-hospital-sand border border-dashed border-hospital-accent rounded-2xl p-4 space-y-3 flex flex-col items-center">
-                    <div class="text-xs font-bold text-hospital-darkBlue">مستشفى الملك فيصل</div>
-                    <div id="ticket-number-preview" class="text-4xl font-black text-hospital-blue">001</div>
+                <div class="bg-hospital-sand border border-dashed border-hospital-accent rounded-2xl p-3 space-y-2 flex flex-col items-center">
+                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز للحصول على تذكرة ومتابعة دورك</div>
                     
-                    <!-- Dynamic QR Code Container with real URL -->
-                    <div class="bg-white p-3 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center">
-                        <div id="qrcode"></div>
+                    <!-- New Visitor QR Container -->
+                    <div class="bg-white p-2.5 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center">
+                        <div id="visitor-qrcode"></div>
                     </div>
-                    
-                    <div class="text-[10px] text-slate-500 font-medium">امسح الرمز لمتابعة رقم الدور</div>
+
+                    <a id="visitor-link-btn" href="#" target="_blank" class="text-[10px] text-hospital-blue font-bold underline hover:text-hospital-accent transition-colors">
+                        فتح نافذة تذكرة الزائر مباشرة
+                    </a>
                 </div>
             </div>
 
@@ -219,7 +220,7 @@
 
     <!-- Footer Banner -->
     <footer class="bg-hospital-darkBlue text-amber-200 py-4 border-t border-hospital-accent/30 text-center text-sm font-bold shadow-lg">
-        <p>لوحة تحكم العيادات - وزارة الصحة © المملكة العربية السعودية</p>
+        <p>لوحة التحكم بالعيادات - وزارة الصحة © المملكة العربية السعودية</p>
     </footer>
 
     <!-- Independent Controller Core Script -->
@@ -332,8 +333,8 @@
                 const emptyMsgEl = document.getElementById('ctrl-empty-msg');
                 const statWaitingEl = document.getElementById('stat-waiting');
                 const statNextIdEl = document.getElementById('stat-next-id');
-                const ticketNumPreview = document.getElementById('ticket-number-preview');
-                const qrContainer = document.getElementById('qrcode');
+                const visitorQrContainer = document.getElementById('visitor-qrcode');
+                const visitorLinkBtn = document.getElementById('visitor-link-btn');
 
                 const currentStr = (state && state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
                 if (currentNumEl) currentNumEl.textContent = currentStr;
@@ -341,19 +342,17 @@
                 if (statWaitingEl) statWaitingEl.textContent = state && state.queue ? state.queue.length : 0;
                 if (statNextIdEl) statNextIdEl.textContent = String(state && state.nextId ? state.nextId : 1).padStart(3, '0');
 
-                const previewIdStr = String(state && state.nextId ? state.nextId : 1).padStart(3, '0');
-                if (ticketNumPreview) ticketNumPreview.textContent = previewIdStr;
-
-                if (qrContainer) {
-                    qrContainer.innerHTML = '';
+                // Generate Visitor Self-Service QR Code linking to display page for tracking/booking
+                if (visitorQrContainer) {
+                    visitorQrContainer.innerHTML = '';
                     try {
-                        // استخدام الرابط الحقيقي المحدث مع رقم التذكرة
-                        const realBaseUrl = "https://khm6sa-wq.github.io/HOSPITAL/display.html";
-                        const qrText = `${realBaseUrl}?ticket=${previewIdStr}`;
-                        new QRCode(qrContainer, {
-                            text: qrText,
-                            width: 90,
-                            height: 90,
+                        const visitorUrl = "https://khm6sa-wq.github.io/HOSPITAL/display.html";
+                        if (visitorLinkBtn) visitorLinkBtn.href = visitorUrl;
+
+                        new QRCode(visitorQrContainer, {
+                            text: visitorUrl,
+                            width: 95,
+                            height: 95,
                             colorDark: "#0F3759",
                             colorLight: "#ffffff",
                             correctLevel: QRCode.CorrectLevel.H
