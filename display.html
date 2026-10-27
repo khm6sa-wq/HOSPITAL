@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شاشة الانتظار وعرض الأدوار - مستشفى الملك فيصل</title>
+    <title>شاشة العرض والانتظار - مستشفى الملك فيصل</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -35,66 +35,99 @@
     <style>
         body {
             font-family: 'Tajawal', sans-serif;
-            background-color: #0A253D;
-            overflow: hidden;
+            background-color: #F4F7FB;
+            overflow-x: hidden;
+        }
+        .pattern-bg {
+            background-color: #F4F7FB;
+            background-image: radial-gradient(#1E4D7B 0.6px, transparent 0.6px), radial-gradient(#D4AF37 0.6px, #F4F7FB 0.6px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+        .card-shadow {
+            box-shadow: 0 20px 40px -10px rgba(15, 55, 89, 0.12);
         }
         .royal-glow {
-            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
         }
     </style>
 </head>
-<body class="bg-hospital-darkBlue text-white h-screen flex flex-col justify-between p-6">
+<body class="pattern-bg text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <!-- Header -->
-    <header class="bg-hospital-blue border-b-4 border-hospital-accent py-4 px-8 rounded-2xl shadow-2xl flex items-center justify-between">
-        <div class="flex items-center space-x-4 space-x-reverse">
-            <div class="w-16 h-16 rounded-full border-2 border-hospital-accent bg-white flex items-center justify-center overflow-hidden shadow-lg">
-                <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-full h-full object-cover scale-[1.55]">
+    <!-- Top Bar -->
+    <div class="bg-hospital-darkBlue py-2 px-6 text-xs font-bold text-amber-200 border-b border-hospital-accent/30 shadow-md">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2.5 text-hospital-accent">
+                <i class="fa-solid fa-hospital text-sm"></i>
+                <span class="tracking-wide">المملكة العربية السعودية - وزارة الصحة | شاشة العرض العامة</span>
             </div>
-            <div>
-                <h1 class="text-3xl font-bold font-amiri text-white tracking-wide">مُسْتَشْفَى المَلِك فَيْصَل</h1>
-                <p class="text-xs text-amber-200 font-semibold">شاشة العرض والمتابعة العامة</p>
+            <div class="flex items-center gap-2 font-black text-hospital-accent bg-hospital-accent/10 px-3 py-0.5 rounded-full border border-hospital-accent/30">
+                <i class="fa-solid fa-gem text-[11px]"></i>
+                <span>رؤية 2030</span>
             </div>
         </div>
+    </div>
 
-        <div class="text-left bg-hospital-darkBlue px-6 py-2.5 rounded-2xl border border-hospital-accent/40 shadow-inner">
-            <div id="live-clock" class="text-2xl font-black text-hospital-accent tracking-widest text-center">00:00:00 ص</div>
-            <div id="live-date" class="text-[10px] text-amber-200 font-bold text-center mt-0.5">--/--/----</div>
+    <!-- Navigation Header -->
+    <header class="bg-hospital-blue text-white border-b-4 border-hospital-accent shadow-2xl py-4 px-8 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            
+            <div class="flex items-center space-x-5 space-x-reverse">
+                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-hospital-accent shadow-2xl royal-glow shrink-0 flex items-center justify-center overflow-hidden bg-white">
+                    <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-full h-full object-cover scale-[1.55]">
+                </div>
+
+                <div class="flex flex-col justify-center">
+                    <h1 class="text-3xl sm:text-4xl font-bold font-amiri tracking-tight text-white drop-shadow-md">
+                        مُسْتَشْفَى المَلِك فَيْصَل
+                    </h1>
+                    <span class="text-sm sm:text-base font-semibold tracking-wider text-amber-200 mt-1">
+                        King Faisal Hospital - شاشة الانتظار
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="text-left bg-hospital-darkBlue px-6 py-2.5 rounded-2xl border border-hospital-accent/40 min-w-[160px] shadow-inner">
+                    <div id="live-clock" class="text-xl sm:text-2xl font-black text-hospital-accent tracking-widest text-center">00:00:00 ص</div>
+                    <div id="live-date" class="text-[10px] text-amber-200 font-bold mt-0.5 text-center">--/--/----</div>
+                </div>
+            </div>
         </div>
     </header>
 
-    <!-- Main Display Section -->
-    <main class="grid grid-cols-1 md:grid-cols-3 gap-6 my-auto flex-grow py-6">
-        
-        <!-- Current Serving Box (2 Columns) -->
-        <div class="md:col-span-2 bg-hospital-blue border-4 border-hospital-accent/60 rounded-3xl p-8 flex flex-col items-center justify-center shadow-2xl royal-glow relative overflow-hidden text-center">
-            <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-accent via-white to-hospital-accent"></div>
+    <!-- Main Display Area -->
+    <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+
+        <!-- Left Column: Current Serving Box (2 Columns) -->
+        <div class="md:col-span-2 bg-white rounded-3xl p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
             
-            <div class="text-amber-200 font-black text-2xl mb-4 flex items-center gap-3">
-                <i class="fa-solid fa-bullhorn text-hospital-accent animate-bounce"></i>
+            <div class="text-hospital-darkBlue font-black text-2xl flex items-center justify-center gap-3">
+                <i class="fa-solid fa-bullhorn text-hospital-accent animate-bounce text-3xl"></i>
                 <span>الرقم الحالي تحت الخدمة</span>
             </div>
-
-            <div id="display-current-num" class="text-9xl sm:text-[12rem] font-black text-white tracking-tighter drop-shadow-2xl my-2">
+            
+            <div id="display-current-num" class="text-8xl sm:text-[11rem] font-black text-hospital-blue tracking-tighter py-6 bg-hospital-sand rounded-3xl border-2 border-hospital-accent/30 shadow-inner">
                 000
             </div>
 
-            <div class="text-sm text-slate-300 font-bold mt-2">
-                يرجى من المراجع الكريم التوجه إلى العيادة المخصصة فوراً
+            <div class="text-sm font-bold text-slate-500">
+                يرجى من المراجع الكريم التوجه إلى العيادة المخصصة فوراً عند النداء.
             </div>
         </div>
 
-        <!-- Waiting Queue List (1 Column) -->
-        <div class="md:col-span-1 bg-hospital-blue/80 border-2 border-hospital-accent/30 rounded-3xl p-6 flex flex-col shadow-xl">
-            <div class="flex items-center justify-between pb-3 border-b border-hospital-accent/30 mb-4">
-                <h2 class="text-lg font-black text-amber-200 flex items-center gap-2">
-                    <i class="fa-solid fa-list-ol text-hospital-accent"></i>
-                    <span>قائمة الانتظار</span>
-                </h2>
-                <span id="display-queue-count" class="text-xs font-bold text-hospital-darkBlue bg-hospital-accent px-3 py-1 rounded-full">0</span>
+        <!-- Right Column: Queue List (1 Column) -->
+        <div class="md:col-span-1 bg-white rounded-3xl p-6 border-2 border-slate-200/85 card-shadow space-y-4 self-stretch flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-4 h-4 rounded-full bg-hospital-accent"></div>
+                    <h2 class="text-lg font-black text-hospital-darkBlue">قائمة الانتظار</h2>
+                </div>
+                <span id="display-queue-count" class="text-xs font-bold text-hospital-blue bg-hospital-blue/10 border border-hospital-blue/20 px-3 py-1 rounded-full">0 مراجعين</span>
             </div>
 
-            <div id="display-queue-list" class="space-y-3 overflow-y-auto max-h-[350px] pr-1 flex-grow">
+            <div id="display-queue-list" class="space-y-3 overflow-y-auto max-h-[350px] p-1 flex-grow">
             </div>
 
             <div id="display-empty-msg" class="text-center py-12 text-slate-400 font-bold text-sm">
@@ -104,8 +137,8 @@
 
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-hospital-blue border-t-2 border-hospital-accent/30 py-3 px-6 rounded-2xl text-center text-xs font-bold text-amber-200 shadow-lg">
+    <!-- Footer Banner -->
+    <footer class="bg-hospital-darkBlue text-amber-200 py-4 border-t border-hospital-accent/30 text-center text-sm font-bold shadow-lg">
         <p>المملكة العربية السعودية - وزارة الصحة © نظام إدارة الطوابير الآلي</p>
     </footer>
 
@@ -160,7 +193,7 @@
 
                 const currentStr = (state && state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '000';
                 if (currentNumEl) currentNumEl.textContent = currentStr;
-                if (queueCountEl) queueCountEl.textContent = state && state.queue ? state.queue.length : 0;
+                if (queueCountEl) queueCountEl.textContent = `${state && state.queue ? state.queue.length : 0} مراجعين`;
 
                 if (queueListEl) {
                     queueListEl.innerHTML = '';
@@ -170,10 +203,10 @@
                         if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
                         state.queue.forEach((patient) => {
                             const item = document.createElement('div');
-                            item.className = "bg-hospital-darkBlue border border-hospital-accent/30 rounded-2xl p-3.5 text-center shadow-md flex items-center justify-between px-6";
+                            item.className = "bg-hospital-sand border border-hospital-accent/30 rounded-2xl p-3 text-center shadow-xs flex items-center justify-between px-5";
                             item.innerHTML = `
-                                <span class="text-2xl font-black text-white">${String(patient.id).padStart(3, '0')}</span>
-                                <span class="text-xs text-amber-200 font-bold bg-amber-200/10 px-3 py-1 rounded-full border border-amber-200/20">قيد الانتظار</span>
+                                <span class="text-xl font-black text-hospital-blue">${String(patient.id).padStart(3, '0')}</span>
+                                <span class="text-[10px] text-slate-500 font-bold">انتظار</span>
                             `;
                             queueListEl.appendChild(item);
                         });
@@ -214,7 +247,7 @@
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
-                        state = cloudData.state; // تم تحديث المتغير المحلي مباشرة هنا لضمان مزامنة الشاشة
+                        state = cloudData.state;
                         if (cloudData.shouldAnnounce) {
                             announceCurrent();
                         }
