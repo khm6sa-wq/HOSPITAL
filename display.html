@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -16,21 +16,17 @@
             theme: {
                 extend: {
                     colors: {
-                        saudi: {
-                            green: '#006C35',
-                            darkGreen: '#004B25',
-                            emerald: '#0B4B28',
-                            lightGreen: '#008743',
-                            gold: '#D4AF37',
-                            lightGold: '#F3E5AB',
-                            darkGold: '#A38128',
-                            sand: '#FBF9F5',
-                            slate: '#1E293B'
+                        hospital: {
+                            blue: '#0F3759',      
+                            darkBlue: '#0A253D',  
+                            lightBlue: '#1E4D7B', 
+                            accent: '#D4AF37',    
+                            sand: '#F7F9FC',      
                         }
                     },
                     fontFamily: {
-                        cairo: ['Cairo', 'Tajawal', 'sans-serif'],
-                        tajawal: ['Tajawal', 'Cairo', 'sans-serif']
+                        amiri: ['Amiri', 'serif'],
+                        tajawal: ['Tajawal', 'sans-serif']
                     }
                 }
             }
@@ -38,59 +34,73 @@
     </script>
     <style>
         body {
-            font-family: 'Tajawal', 'Cairo', sans-serif;
-            background-color: #F8F6F0;
+            font-family: 'Tajawal', sans-serif;
+            background-color: #F4F7FB;
             overflow-x: hidden;
         }
-        .saudi-pattern-bg {
-            background-color: #F8F6F0;
-            background-image: radial-gradient(#006C35 0.75px, transparent 0.75px), radial-gradient(#D4AF37 0.75px, #F8F6F0 0.75px);
-            background-size: 35px 35px;
-            background-position: 0 0, 17.5px 17.5px;
+        .pattern-bg {
+            background-color: #F4F7FB;
+            background-image: radial-gradient(#1E4D7B 0.6px, transparent 0.6px), radial-gradient(#D4AF37 0.6px, #F4F7FB 0.6px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
         }
-        .emerald-card-shadow {
-            box-shadow: 0 20px 50px -10px rgba(0, 108, 53, 0.15);
+        .card-shadow {
+            box-shadow: 0 20px 40px -10px rgba(15, 55, 89, 0.12);
         }
         .call-flash {
-            animation: flashGolden 1s ease-in-out 3;
+            animation: flashGold 1s ease-in-out 3;
         }
-        @keyframes flashGolden {
+        @keyframes flashGold {
             0%, 100% { background-color: rgba(255, 255, 255, 1); }
-            50% { background-color: rgba(243, 229, 171, 0.7); }
+            50% { background-color: rgba(254, 243, 199, 0.8); }
         }
     </style>
 </head>
-<body class="saudi-pattern-bg text-slate-800 min-h-screen flex flex-col justify-between" onclick="initAudioContext()">
+<body class="pattern-bg text-slate-800 min-h-screen flex flex-col justify-between" onclick="initAudioContext()">
 
     <!-- Top Bar -->
-    <header class="bg-saudi-emerald text-white border-b-4 border-saudi-gold shadow-2xl py-4 px-8">
+    <div class="bg-hospital-darkBlue py-2 px-6 text-xs font-bold text-amber-200 border-b border-hospital-accent/30 shadow-md">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2.5 text-hospital-accent">
+                <i class="fa-solid fa-hospital text-sm"></i>
+                <span class="tracking-wide">المملكة العربية السعودية - وزارة الصحة</span>
+            </div>
+            <div class="flex items-center gap-2 font-black text-hospital-accent bg-hospital-accent/10 px-3 py-0.5 rounded-full border border-hospital-accent/30">
+                <i class="fa-solid fa-gem text-[11px]"></i>
+                <span>رؤية 2030</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="bg-hospital-blue text-white border-b-4 border-hospital-accent shadow-2xl py-4 px-8 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            
+            <!-- الشعار الرسمي الدقيق المطابق لصورتك تماماً -->
             <div class="flex items-center space-x-4 space-x-reverse">
-                <div class="w-16 h-16 rounded-2xl bg-saudi-darkGreen border-2 border-saudi-gold flex items-center justify-center p-3 text-saudi-gold shadow-lg shrink-0">
-                    <svg class="w-full h-full fill-saudi-gold" viewBox="0 0 100 100">
-                        <path d="M50,15 C52,25 58,32 68,36 C58,38 53,42 52,50 C48,50 43,42 33,36 C43,32 48,25 50,15 Z" />
-                        <path d="M47,48 L53,48 L53,82 L47,82 Z" />
-                        <path d="M20,78 Q50,70 80,55 L75,50 Q48,64 22,70 Z" />
-                        <path d="M80,78 Q50,70 20,55 L25,50 Q52,64 78,70 Z" />
-                    </svg>
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white p-1 border-2 border-hospital-accent shadow-xl shrink-0 flex items-center justify-center overflow-hidden">
+                    <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-full h-full object-contain">
                 </div>
-                <div>
-                    <h1 class="text-3xl font-black text-white tracking-wide font-tajawal">مستشفى الملك فيصل</h1>
-                    <p class="text-sm text-saudi-lightGold font-semibold">صالة انتظار المراجعين الرئيسية</p>
+
+                <div class="flex flex-col">
+                    <h1 class="text-2xl sm:text-3xl font-bold font-amiri tracking-tight text-white drop-shadow-md">
+                        مُسْتَشْفَى المَلِك فَيْصَل
+                    </h1>
+                    <span class="text-xs sm:text-sm font-semibold tracking-wider text-amber-200 mt-0.5">
+                        King Faisal Hospital
+                    </span>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <!-- Fullscreen Toggle Button -->
-                <button onclick="toggleFullScreen()" class="bg-saudi-gold hover:bg-amber-400 text-saudi-darkGreen px-4 py-3 rounded-2xl text-xs font-black shadow transition flex items-center gap-2 cursor-pointer border border-saudi-darkGreen/20">
+                <button onclick="toggleFullScreen()" class="bg-hospital-accent hover:bg-amber-400 text-hospital-darkBlue px-4.5 py-3 rounded-2xl text-xs font-black shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 cursor-pointer border border-white/30">
                     <i class="fa-solid fa-expand text-base"></i>
                     <span class="hidden sm:inline">تكبير الشاشة</span>
                 </button>
 
-                <!-- Clock Box (12-Hour format) -->
-                <div class="text-left bg-saudi-darkGreen/50 px-6 py-3 rounded-2xl border border-saudi-gold/40 min-w-[160px]">
-                    <div id="live-clock" class="text-xl sm:text-2xl font-black text-saudi-gold tracking-widest text-center">00:00:00 ص</div>
-                    <div id="live-date" class="text-[11px] text-saudi-lightGold font-bold mt-0.5 text-center">--/--/----</div>
+                <div class="text-left bg-hospital-darkBlue px-6 py-2.5 rounded-2xl border border-hospital-accent/40 min-w-[160px] shadow-inner">
+                    <div id="live-clock" class="text-xl sm:text-2xl font-black text-hospital-accent tracking-widest text-center">00:00:00 ص</div>
+                    <div id="live-date" class="text-[10px] text-amber-200 font-bold mt-0.5 text-center">--/--/----</div>
                 </div>
             </div>
         </div>
@@ -99,38 +109,36 @@
     <!-- Main Display Area -->
     <main class="max-w-5xl w-full mx-auto px-6 py-8 flex-grow flex flex-col gap-8 justify-center">
 
-        <!-- Current Serving Display Box (Top/Center) -->
-        <div id="lounge-card-container" class="bg-white rounded-3xl p-10 border-4 border-saudi-gold/50 emerald-card-shadow text-center space-y-6 relative overflow-hidden transition-all duration-300">
-            <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-saudi-green via-saudi-gold to-saudi-green"></div>
+        <!-- Current Serving Display Box -->
+        <div id="lounge-card-container" class="bg-white rounded-3xl p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 relative overflow-hidden transition-all duration-300">
+            <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
             
             <div class="text-slate-600 font-black text-2xl sm:text-3xl mb-2 flex items-center justify-center gap-3">
-                <i class="fa-solid fa-bell text-saudi-gold animate-bounce"></i>
+                <i class="fa-solid fa-bell text-hospital-accent animate-bounce"></i>
                 <span>الرقم الحالي</span>
             </div>
 
             <div class="py-2">
-                <div id="display-current-num" class="text-9xl sm:text-[11rem] font-black text-saudi-green tracking-tighter my-2 py-6 bg-saudi-sand/90 rounded-3xl border-2 border-saudi-gold/40 shadow-inner">---</div>
+                <div id="display-current-num" class="text-9xl sm:text-[11rem] font-black text-hospital-blue tracking-tighter my-2 py-6 bg-hospital-sand rounded-3xl border-2 border-hospital-accent/30 shadow-inner">---</div>
             </div>
 
-            <div class="bg-saudi-emerald text-saudi-lightGold p-4 rounded-2xl border border-saudi-gold/50 text-xl sm:text-2xl font-black shadow-md flex items-center justify-center gap-3 max-w-xl mx-auto">
-                <i class="fa-solid fa-stethoscope text-saudi-gold"></i>
+            <div class="bg-hospital-blue text-amber-200 p-4 rounded-2xl border border-hospital-accent/50 text-xl sm:text-2xl font-black shadow-md flex items-center justify-center gap-3 max-w-xl mx-auto">
+                <i class="fa-solid fa-stethoscope text-hospital-accent"></i>
                 <span>الرجاء التوجه للعيادة</span>
             </div>
         </div>
 
-        <!-- Next Queue List Boxes (Bottom Row - Side by Side) -->
-        <div class="bg-white rounded-3xl p-6 border-2 border-slate-200/80 emerald-card-shadow space-y-4">
+        <!-- Next Queue List Boxes -->
+        <div class="bg-white rounded-3xl p-6 border-2 border-slate-200/80 card-shadow space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div class="flex items-center gap-3">
-                    <div class="w-4 h-4 rounded-full bg-saudi-gold"></div>
-                    <h2 class="text-lg font-black text-saudi-darkGreen">قائمة الانتظار القادمة</h2>
+                    <div class="w-4 h-4 rounded-full bg-hospital-accent"></div>
+                    <h2 class="text-lg font-black text-hospital-darkBlue">قائمة الانتظار القادمة</h2>
                 </div>
-                <span id="display-queue-counter" class="text-xs font-bold text-saudi-green bg-saudi-green/10 border border-saudi-green/20 px-3 py-1 rounded-full">0 مراجعين</span>
+                <span id="display-queue-counter" class="text-xs font-bold text-hospital-blue bg-hospital-blue/10 border border-hospital-blue/20 px-3 py-1 rounded-full">0 مراجعين</span>
             </div>
 
-            <!-- Grid Boxes Container -->
             <div id="display-queue-list" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                <!-- Dynamic Queue Boxes will be injected here -->
             </div>
 
             <div id="display-empty-msg" class="text-center py-8 text-slate-400 font-bold hidden">
@@ -142,11 +150,11 @@
     </main>
 
     <!-- Footer Banner -->
-    <footer class="bg-saudi-darkGreen text-saudi-lightGold py-4 border-t border-saudi-gold/30 text-center text-sm font-bold">
+    <footer class="bg-hospital-darkBlue text-amber-200 py-4 border-t border-hospital-accent/30 text-center text-sm font-bold shadow-lg">
         <p>نعمل لخدمتكم دائماً - وزارة الصحة © المملكة العربية السعودية</p>
     </footer>
 
-    <!-- Audio Engine & Sync -->
+    <!-- Audio & Firebase Sync Engine -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -166,7 +174,6 @@
             } catch (e) {}
         };
 
-        // Fullscreen Toggle Function
         window.toggleFullScreen = function() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(() => {});
@@ -274,7 +281,6 @@
             };
         }
 
-        // Play Chime Tone Only (No Speech)
         function playChimeOnly() {
             try {
                 if (!audioCtx) {
@@ -328,9 +334,9 @@
                     if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
                     state.queue.forEach((patient) => {
                         const box = document.createElement('div');
-                        box.className = "bg-saudi-sand border-2 border-saudi-gold/40 rounded-2xl p-4 text-center shadow-sm flex flex-col items-center justify-center";
+                        box.className = "bg-hospital-sand border-2 border-hospital-accent/40 rounded-2xl p-4 text-center shadow-sm flex flex-col items-center justify-center";
                         box.innerHTML = `
-                            <span class="text-3xl sm:text-4xl font-black text-saudi-darkGreen">${String(patient.id).padStart(3, '0')}</span>
+                            <span class="text-3xl sm:text-4xl font-black text-hospital-blue">${String(patient.id).padStart(3, '0')}</span>
                         `;
                         queueListEl.appendChild(box);
                     });
