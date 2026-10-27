@@ -106,7 +106,7 @@
     <!-- Main Controller Area -->
     <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow grid grid-cols-1 md:grid-cols-3 gap-8">
 
-        <!-- Left Column: Actions & Fixed QR Code (1 Column) -->
+        <!-- Left Column: Actions & Visitor QR (1 Column) -->
         <div class="space-y-6 md:col-span-1">
             
             <!-- Actions Card -->
@@ -137,22 +137,22 @@
                 </button>
             </div>
 
-            <!-- Fixed Static QR Code Card -->
+            <!-- Visitor QR Code Card -->
             <div class="bg-white rounded-3xl p-6 border-2 border-hospital-accent/40 card-shadow space-y-3 text-center">
                 <div class="text-xs font-bold text-slate-600 flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-qrcode text-hospital-accent text-sm"></i>
-                    <span>باركود شاشة العرض والانتظار</span>
+                    <span>باركود متابعة دور المراجع</span>
                 </div>
                 
                 <div class="bg-hospital-sand border border-dashed border-hospital-accent rounded-2xl p-3 space-y-2 flex flex-col items-center">
-                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز لمتابعة شاشة الدور مباشرة</div>
+                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز لمتابعة دورك وتذكرتك</div>
                     
-                    <!-- Fixed Static QR Container -->
+                    <!-- QR Container -->
                     <div class="bg-white p-2.5 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center">
-                        <div id="fixed-qrcode"></div>
+                        <div id="visitor-qrcode"></div>
                     </div>
 
-                    <a href="display.html" target="_blank" class="text-[10px] text-hospital-blue font-bold underline hover:text-hospital-accent transition-colors">
+                    <a id="visitor-link-btn" href="#" target="_blank" class="text-[10px] text-hospital-blue font-bold underline hover:text-hospital-accent transition-colors">
                         فتح شاشة العرض مباشرة
                     </a>
                 </div>
@@ -192,7 +192,7 @@
                 </div>
 
                 <div class="text-xs font-semibold text-slate-400">
-                    يتم إصدار التذاكر من مكتب الاستقبال، ومسح الباركود يفتح شاشة العرض للمراجعين.
+                    يتم إصدار التذاكر عبر الاستقبال وتحديث شاشة العرض تلقائياً.
                 </div>
             </div>
 
@@ -299,7 +299,7 @@
 
         window.callNextPatient = function() {
             if (state.queue.length === 0) {
-                alert('لا يوجد مراجعين في الانتظار حالياً');
+                alert('لا يوجد مراجعين في قائمة الانتظار حالياً');
                 return;
             }
             const nextPatient = state.queue.shift();
@@ -322,8 +322,6 @@
             }
         };
 
-        let qrInitialized = false;
-
         window.renderController = function() {
             try {
                 const currentNumEl = document.getElementById('ctrl-current-num');
@@ -332,7 +330,8 @@
                 const emptyMsgEl = document.getElementById('ctrl-empty-msg');
                 const statWaitingEl = document.getElementById('stat-waiting');
                 const statNextIdEl = document.getElementById('stat-next-id');
-                const fixedQrContainer = document.getElementById('fixed-qrcode');
+                const visitorQrContainer = document.getElementById('visitor-qrcode');
+                const visitorLinkBtn = document.getElementById('visitor-link-btn');
 
                 const currentStr = (state && state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
                 if (currentNumEl) currentNumEl.textContent = currentStr;
@@ -340,20 +339,22 @@
                 if (statWaitingEl) statWaitingEl.textContent = state && state.queue ? state.queue.length : 0;
                 if (statNextIdEl) statNextIdEl.textContent = String(state && state.nextId ? state.nextId : 1).padStart(3, '0');
 
-                // Render Fixed Static QR Code only once to ensure it never changes
-                if (fixedQrContainer && !qrInitialized) {
-                    fixedQrContainer.innerHTML = '';
+                // Dynamic QR Code passing the upcoming ticket number to display.html
+                if (visitorQrContainer) {
+                    visitorQrContainer.innerHTML = '';
                     try {
-                        const displayUrl = "https://khm6sa-wq.github.io/HOSPITAL/display.html";
-                        new QRCode(fixedQrContainer, {
-                            text: displayUrl,
+                        const nextIdVal = state && state.nextId ? state.nextId : 1;
+                        const visitorUrl = `https://khm6sa-wq.github.io/HOSPITAL/display.html?ticket=${nextIdVal}`;
+                        if (visitorLinkBtn) visitorLinkBtn.href = visitorUrl;
+
+                        new QRCode(visitorQrContainer, {
+                            text: visitorUrl,
                             width: 95,
                             height: 95,
                             colorDark: "#0F3759",
                             colorLight: "#ffffff",
                             correctLevel: QRCode.CorrectLevel.H
                         });
-                        qrInitialized = true;
                     } catch (err) {}
                 }
 
