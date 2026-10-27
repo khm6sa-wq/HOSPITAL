@@ -88,7 +88,6 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <!-- Fullscreen Toggle Button -->
                 <button onclick="toggleFullscreen()" class="bg-hospital-accent hover:bg-amber-400 text-hospital-darkBlue px-4 py-3 rounded-2xl text-xs font-black shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 cursor-pointer border border-white/30">
                     <i class="fa-solid fa-expand text-base"></i>
                     <span>تكبير الشاشة</span>
@@ -114,4 +113,190 @@
                 <span>الرقم الحالي تحت الخدمة</span>
             </div>
             
-            <div id="display-current-num" class="text-8xl sm:text-[11rem] font-black text-hospital-blue tracking-tighter py-6 bg
+            <div id="display-current-num" class="text-8xl sm:text-[11rem] font-black text-hospital-blue tracking-tighter py-6 bg-hospital-sand rounded-3xl border-2 border-hospital-accent/30 shadow-inner">
+                ---
+            </div>
+
+            <div class="text-sm sm:text-base font-bold text-slate-500">
+                يرجى من المراجع الكريم التوجه إلى العيادة المخصصة فوراً عند النداء.
+            </div>
+        </div>
+
+        <!-- Queue List Box -->
+        <div class="bg-white rounded-3xl p-6 border-2 border-slate-200/85 card-shadow space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-4 h-4 rounded-full bg-hospital-accent"></div>
+                    <h2 class="text-lg font-black text-hospital-darkBlue">قائمة الانتظار النشطة</h2>
+                </div>
+                <span id="display-queue-count" class="text-xs font-bold text-hospital-blue bg-hospital-blue/10 border border-hospital-blue/20 px-3 py-1 rounded-full">0 مراجعين</span>
+            </div>
+
+            <div id="display-queue-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1">
+            </div>
+
+            <div id="display-empty-msg" class="text-center py-6 text-slate-400 font-bold text-sm">
+                لا يوجد منتظرين حالياً
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Banner -->
+    <footer class="bg-hospital-darkBlue text-amber-200 py-4 border-t border-hospital-accent/30 text-center text-sm font-bold shadow-lg">
+        <p>المملكة العربية السعودية - وزارة الصحة © نظام إدارة الطوابير الآلي</p>
+    </footer>
+
+    <!-- Main Independent Script -->
+    <script>
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function playChimeAlert() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const audioCtx = new AudioContext();
+                
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+                gain1.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                osc1.start();
+                osc1.stop(audioCtx.currentTime + 0.3);
+
+                setTimeout(() => {
+                    try {
+                        const osc2 = audioCtx.createOscillator();
+                        const gain2 = audioCtx.createGain();
+                        osc2.type = 'sine';
+                        osc2.frequency.setValueAtTime(880, audioCtx.currentTime);
+                        gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                        osc2.connect(gain2);
+                        gain2.connect(audioCtx.destination);
+                        osc2.start();
+                        osc2.stop(audioCtx.currentTime + 0.5);
+                    } catch(e) {}
+                }, 200);
+            } catch (e) {}
+        }
+
+        function updateClock() {
+            try {
+                const now = new Date();
+                const clockEl = document.getElementById('live-clock');
+                const dateEl = document.getElementById('live-date');
+                
+                if (clockEl) {
+                    let hours = now.getHours();
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    const ampm = hours >= 12 ? 'م' : 'ص';
+                    hours = hours % 12 || 12;
+                    clockEl.textContent = hours.toString().padStart(2, '0') + ':' + minutes + ':' + seconds + ' ' + ampm;
+                }
+                if (dateEl) {
+                    dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                }
+            } catch(e) {}
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        window.renderStateData = function(state) {
+            if (!state) return;
+            const currentNumEl = document.getElementById('display-current-num');
+            const queueListEl = document.getElementById('display-queue-list');
+            const queueCountEl = document.getElementById('display-queue-count');
+            const emptyMsgEl = document.getElementById('display-empty-msg');
+
+            const currentStr = (state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
+            if (currentNumEl) currentNumEl.textContent = currentStr;
+            if (queueCountEl) queueCountEl.textContent = (state.queue ? state.queue.length : 0) + ' مراجعين';
+
+            if (queueListEl) {
+                queueListEl.innerHTML = '';
+                if (!state.queue || state.queue.length === 0) {
+                    if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
+                } else {
+                    if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
+                    state.queue.forEach(function(patient) {
+                        const box = document.createElement('div');
+                        box.className = "bg-hospital-sand border border-hospital-accent/30 rounded-xl p-3 text-center shadow-xs flex items-center justify-between px-4";
+                        box.innerHTML = '<span class="text-xl font-black text-hospital-blue">' + String(patient.id).padStart(3, '0') + '</span>' +
+                                        '<span class="text-[10px] text-slate-500 font-bold">انتظار</span>';
+                        queueListEl.appendChild(box);
+                    });
+                }
+            }
+        };
+
+        // Channel Sync Fallback
+        var queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
+        if (queueChannel) {
+            queueChannel.onmessage = function(event) {
+                if (event.data && event.data.state) {
+                    window.renderStateData(event.data.state);
+                    if (event.data.shouldAnnounce) playChimeAlert();
+                }
+            };
+        }
+    </script>
+
+    <!-- Firebase SDK Setup -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
+            authDomain: "hospital-ba989.firebaseapp.com",
+            projectId: "hospital-ba989",
+            storageBucket: "hospital-ba989.firebasestorage.app",
+            messagingSenderId: "30608387919",
+            appId: "1:30608387919:web:ee0f83efabc514e5ff1f3a",
+            measurementId: "G-6R34PWFVWK"
+        };
+
+        let lastAnnouncedId = null;
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            signInAnonymously(auth).catch(() => {});
+
+            const docRef = doc(db, "queues", "hospital_main_queue");
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if (cloudData && cloudData.state) {
+                        window.renderStateData(cloudData.state);
+                        
+                        if (cloudData.shouldAnnounce && cloudData.state.current && cloudData.state.current.id) {
+                            if (lastAnnouncedId !== cloudData.state.current.id) {
+                                lastAnnouncedId = cloudData.state.current.id;
+                                if (typeof playChimeAlert === 'function') playChimeAlert();
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (e) {}
+    </script>
+</body>
+</html>
