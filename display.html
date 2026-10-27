@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شاشة العرض والانتظار - مستشفى الملك فيصل</title>
+    <title>بوابة المراجعين وشاشة الانتظار - مستشفى الملك فيصل</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -59,7 +59,7 @@
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-2.5 text-hospital-accent">
                 <i class="fa-solid fa-hospital text-sm"></i>
-                <span class="tracking-wide">المملكة العربية السعودية - وزارة الصحة | شاشة العرض العامة</span>
+                <span class="tracking-wide">المملكة العربية السعودية - وزارة الصحة | بوابة المراجعين الذكية</span>
             </div>
             <div class="flex items-center gap-2 font-black text-hospital-accent bg-hospital-accent/10 px-3 py-0.5 rounded-full border border-hospital-accent/30">
                 <i class="fa-solid fa-gem text-[11px]"></i>
@@ -73,70 +73,143 @@
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             
             <div class="flex items-center space-x-5 space-x-reverse">
-                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-hospital-accent shadow-2xl royal-glow shrink-0 flex items-center justify-center overflow-hidden bg-white">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-hospital-accent shadow-2xl royal-glow shrink-0 flex items-center justify-center overflow-hidden bg-white">
                     <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-full h-full object-cover scale-[1.55]">
                 </div>
 
                 <div class="flex flex-col justify-center">
-                    <h1 class="text-3xl sm:text-4xl font-bold font-amiri tracking-tight text-white drop-shadow-md">
+                    <h1 class="text-2xl sm:text-3xl font-bold font-amiri tracking-tight text-white drop-shadow-md">
                         مُسْتَشْفَى المَلِك فَيْصَل
                     </h1>
-                    <span class="text-sm sm:text-base font-semibold tracking-wider text-amber-200 mt-1">
-                        King Faisal Hospital - شاشة الانتظار
+                    <span class="text-xs sm:text-sm font-semibold tracking-wider text-amber-200 mt-0.5">
+                        King Faisal Hospital - نظام الطوابير الذكي
                     </span>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <button onclick="toggleFullscreen()" class="bg-hospital-accent hover:bg-amber-400 text-hospital-darkBlue px-4 py-3 rounded-2xl text-xs font-black shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 cursor-pointer border border-white/30">
-                    <i class="fa-solid fa-expand text-base"></i>
+                <button onclick="toggleFullscreen()" class="bg-hospital-accent hover:bg-amber-400 text-hospital-darkBlue px-3 py-2.5 rounded-2xl text-xs font-black shadow-lg transition-all hidden sm:flex items-center gap-2 cursor-pointer border border-white/30">
+                    <i class="fa-solid fa-expand"></i>
                     <span>تكبير الشاشة</span>
                 </button>
 
-                <div class="text-left bg-hospital-darkBlue px-6 py-2.5 rounded-2xl border border-hospital-accent/40 min-w-[160px] shadow-inner">
-                    <div id="live-clock" class="text-xl sm:text-2xl font-black text-hospital-accent tracking-widest text-center">00:00:00 ص</div>
-                    <div id="live-date" class="text-[10px] text-amber-200 font-bold mt-0.5 text-center">--/--/----</div>
+                <div class="text-left bg-hospital-darkBlue px-5 py-2 rounded-2xl border border-hospital-accent/40 min-w-[140px] shadow-inner">
+                    <div id="live-clock" class="text-lg sm:text-xl font-black text-hospital-accent tracking-widest text-center">00:00:00 ص</div>
+                    <div id="live-date" class="text-[9px] text-amber-200 font-bold mt-0.5 text-center">--/--/----</div>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Display Area -->
-    <main class="max-w-4xl w-full mx-auto px-6 py-8 flex-grow flex flex-col space-y-6">
+    <!-- Main Content Area -->
+    <main class="max-w-3xl w-full mx-auto px-6 py-8 flex-grow flex flex-col justify-center space-y-6">
 
-        <!-- Current Serving Box -->
-        <div class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 relative overflow-hidden">
-            <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
-            
-            <div class="text-hospital-darkBlue font-black text-2xl sm:text-3xl flex items-center justify-center gap-3">
-                <i class="fa-solid fa-bullhorn text-hospital-accent animate-bounce text-3xl"></i>
-                <span>الرقم الحالي تحت الخدمة</span>
+        <!-- STEP 1: CHOICE SCREEN (Appears on first scan if no mode chosen) -->
+        <div id="view-choice" class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6">
+            <div class="w-16 h-16 bg-hospital-sand border-2 border-hospital-accent rounded-full flex items-center justify-center mx-auto text-hospital-accent text-2xl shadow-inner">
+                <i class="fa-solid fa-hand-holding-medical"></i>
             </div>
-            
-            <div id="display-current-num" class="text-8xl sm:text-[11rem] font-black text-hospital-blue tracking-tighter py-6 bg-hospital-sand rounded-3xl border-2 border-hospital-accent/30 shadow-inner">
-                ---
+            <div class="space-y-2">
+                <h2 class="text-2xl sm:text-3xl font-black text-hospital-darkBlue font-amiri">أهلاً بك في مستشفى الملك فيصل</h2>
+                <p class="text-sm text-slate-500 font-bold">يرجى اختيار الخدمة المطلوبة للمتابعة:</p>
             </div>
 
-            <div class="text-sm sm:text-base font-bold text-slate-500">
-                يرجى من المراجع الكريم التوجه إلى العيادة المخصصة فوراً عند النداء.
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                <button onclick="selectMode('ticket')" class="bg-hospital-blue hover:bg-hospital-lightBlue text-white p-6 rounded-2xl font-black text-base shadow-xl transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-hospital-accent">
+                    <i class="fa-solid fa-ticket text-hospital-accent text-3xl"></i>
+                    <span>حجز رقمك والانضمام للانتظار</span>
+                    <span class="text-[11px] text-amber-200 font-normal">احصل على تذكرة وتابع دورك لحظياً</span>
+                </button>
+
+                <button onclick="selectMode('public')" class="bg-hospital-sand hover:bg-slate-100 text-hospital-blue p-6 rounded-2xl font-black text-base shadow-md transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 cursor-pointer border-2 border-slate-300">
+                    <i class="fa-solid fa-tv text-hospital-blue text-3xl"></i>
+                    <span>متابعة شاشة الانتظار العامة</span>
+                    <span class="text-[11px] text-slate-500 font-normal">مراقبة الأرقام والحالة الحالية فقط</span>
+                </button>
             </div>
         </div>
 
-        <!-- Queue List Box -->
-        <div class="bg-white rounded-3xl p-6 border-2 border-slate-200/85 card-shadow space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div class="flex items-center gap-3">
-                    <div class="w-4 h-4 rounded-full bg-hospital-accent"></div>
-                    <h2 class="text-lg font-black text-hospital-darkBlue">قائمة الانتظار النشطة</h2>
+        <!-- STEP 2: PERSONAL TICKET VIEW (Hidden initially) -->
+        <div id="view-ticket" class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 hidden">
+            <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
+            
+            <div class="text-hospital-darkBlue font-black text-xl sm:text-2xl flex items-center justify-center gap-2">
+                <i class="fa-solid fa-ticket text-hospital-accent text-2xl"></i>
+                <span>رقم تذكرتك الذكية</span>
+            </div>
+            
+            <div id="my-ticket-num" class="text-8xl sm:text-[10rem] font-black text-hospital-blue tracking-tighter py-4 bg-hospital-sand rounded-3xl border-2 border-hospital-accent/30 shadow-inner">
+                ---
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-hospital-sand p-4 rounded-2xl border border-hospital-accent/30 shadow-xs">
+                    <div class="text-xs text-slate-500 font-bold">الرقم الحالي بالخدمة</div>
+                    <div id="ticket-current" class="text-4xl sm:text-5xl font-black text-hospital-blue mt-1">---</div>
                 </div>
-                <span id="display-queue-count" class="text-xs font-bold text-hospital-blue bg-hospital-blue/10 border border-hospital-blue/20 px-3 py-1 rounded-full">0 مراجعين</span>
+                <div class="bg-hospital-sand p-4 rounded-2xl border border-hospital-accent/30 shadow-xs">
+                    <div class="text-xs text-slate-500 font-bold">المراجعين قبلك</div>
+                    <div id="ticket-ahead" class="text-4xl sm:text-5xl font-black text-hospital-accent mt-1">0</div>
+                </div>
             </div>
 
-            <div id="display-queue-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1">
+            <div id="status-box" class="bg-hospital-blue text-amber-200 p-4 rounded-2xl text-xs sm:text-sm font-black shadow-md">
+                جاري تحديث حالة دورك...
             </div>
 
-            <div id="display-empty-msg" class="text-center py-6 text-slate-400 font-bold text-sm">
-                لا يوجد منتظرين حالياً
+            <div class="pt-2 flex items-center justify-center gap-4">
+                <button onclick="resetMySelection()" class="text-xs font-bold text-slate-500 hover:text-hospital-blue underline transition-colors cursor-pointer">
+                    <i class="fa-solid fa-arrow-right ml-1"></i> العودة للقائمة الرئيسية
+                </button>
+                <span class="text-slate-300">|</span>
+                <button onclick="requestNewTicket()" class="text-xs font-bold text-hospital-blue underline hover:text-hospital-accent transition-colors cursor-pointer">
+                    <i class="fa-solid fa-rotate-right ml-1"></i> طلب تذكرة جديدة
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3: PUBLIC DISPLAY VIEW (Hidden initially) -->
+        <div id="view-public" class="space-y-6 hidden">
+            <!-- Current Serving Box -->
+            <div class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
+                
+                <div class="text-hospital-darkBlue font-black text-2xl sm:text-3xl flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-bullhorn text-hospital-accent animate-bounce text-3xl"></i>
+                    <span>الرقم الحالي تحت الخدمة</span>
+                </div>
+                
+                <div id="public-current-num" class="text-8xl sm:text-[10rem] font-black text-hospital-blue tracking-tighter py-6 bg-hospital-sand rounded-3xl border-2 border-hospital-accent/30 shadow-inner">
+                    ---
+                </div>
+
+                <div class="text-sm sm:text-base font-bold text-slate-500">
+                    يرجى من المراجع الكريم التوجه إلى العيادة المخصصة فوراً عند النداء.
+                </div>
+            </div>
+
+            <!-- Queue List Box -->
+            <div class="bg-white rounded-3xl p-6 border-2 border-slate-200/85 card-shadow space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 rounded-full bg-hospital-accent"></div>
+                        <h2 class="text-lg font-black text-hospital-darkBlue">قائمة الانتظار النشطة</h2>
+                    </div>
+                    <span id="public-queue-count" class="text-xs font-bold text-hospital-blue bg-hospital-blue/10 border border-hospital-blue/20 px-3 py-1 rounded-full">0 مراجعين</span>
+                </div>
+
+                <div id="public-queue-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1">
+                </div>
+
+                <div id="public-empty-msg" class="text-center py-6 text-slate-400 font-bold text-sm">
+                    لا يوجد منتظرين حالياً
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="resetMySelection()" class="text-xs font-bold text-slate-500 hover:text-hospital-blue underline transition-colors cursor-pointer bg-white px-4 py-2 rounded-xl shadow-xs border border-slate-200">
+                    <i class="fa-solid fa-arrow-right ml-1"></i> العودة للقائمة الرئيسية
+                </button>
             </div>
         </div>
 
@@ -147,7 +220,7 @@
         <p>المملكة العربية السعودية - وزارة الصحة © نظام إدارة الطوابير الآلي</p>
     </footer>
 
-    <!-- Script & Chime Alert (Only on Display) -->
+    <!-- Logic & UI Controller Script -->
     <script>
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
@@ -194,73 +267,168 @@
             } catch (e) {}
         }
 
-        function updateClock() {
+        setInterval(() => {
             try {
                 const now = new Date();
                 const clockEl = document.getElementById('live-clock');
                 const dateEl = document.getElementById('live-date');
                 
-                if (clockEl) {
+                if(clockEl) {
                     let hours = now.getHours();
                     const minutes = String(now.getMinutes()).padStart(2, '0');
                     const seconds = String(now.getSeconds()).padStart(2, '0');
                     const ampm = hours >= 12 ? 'م' : 'ص';
                     hours = hours % 12 || 12;
-                    clockEl.textContent = hours.toString().padStart(2, '0') + ':' + minutes + ':' + seconds + ' ' + ampm;
+                    clockEl.textContent = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
                 }
-                if (dateEl) {
+                if(dateEl) {
                     dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                 }
-            } catch(e) {}
-        }
+            } catch (e) {}
+        }, 1000);
 
-        setInterval(updateClock, 1000);
-        updateClock();
+        let currentCloudState = { queue: [], current: null, nextId: 1 };
+        let userMode = localStorage.getItem('kfh_user_mode'); // 'ticket' or 'public'
+        let myTicketId = localStorage.getItem('kfh_my_ticket');
 
-        window.renderStateData = function(state) {
+        window.selectMode = function(mode) {
+            userMode = mode;
+            localStorage.setItem('kfh_user_mode', mode);
+
+            if (mode === 'ticket' && !myTicketId) {
+                // Trigger booking via Firebase listener or local generation
+                window.triggerTicketBooking();
+            } else {
+                updateViewVisibility();
+                renderAllUI(currentCloudState);
+            }
+        };
+
+        window.resetMySelection = function() {
+            userMode = null;
+            localStorage.removeItem('kfh_user_mode');
+            localStorage.removeItem('kfh_my_ticket');
+            myTicketId = null;
+            updateViewVisibility();
+        };
+
+        window.requestNewTicket = function() {
+            localStorage.removeItem('kfh_my_ticket');
+            myTicketId = null;
+            window.triggerTicketBooking();
+        };
+
+        window.updateViewVisibility = function() {
+            const choiceEl = document.getElementById('view-choice');
+            const ticketEl = document.getElementById('view-ticket');
+            const publicEl = document.getElementById('view-public');
+
+            choiceEl.classList.add('hidden');
+            ticketEl.classList.add('hidden');
+            publicEl.classList.add('hidden');
+
+            if (!userMode) {
+                choiceEl.classList.remove('hidden');
+            } else if (userMode === 'ticket') {
+                ticketEl.classList.remove('hidden');
+            } else if (userMode === 'public') {
+                publicEl.classList.remove('hidden');
+            }
+        };
+
+        window.renderAllUI = function(state) {
             if (!state) return;
-            const currentNumEl = document.getElementById('display-current-num');
-            const queueListEl = document.getElementById('display-queue-list');
-            const queueCountEl = document.getElementById('display-queue-count');
-            const emptyMsgEl = document.getElementById('display-empty-msg');
+            currentCloudState = state;
 
-            const currentStr = (state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
-            if (currentNumEl) currentNumEl.textContent = currentStr;
-            if (queueCountEl) queueCountEl.textContent = (state.queue ? state.queue.length : 0) + ' مراجعين';
+            // 1. Ticket View Render
+            if (userMode === 'ticket') {
+                const myTicketEl = document.getElementById('my-ticket-num');
+                const currentEl = document.getElementById('ticket-current');
+                const aheadEl = document.getElementById('ticket-ahead');
+                const statusBox = document.getElementById('status-box');
 
-            if (queueListEl) {
-                queueListEl.innerHTML = '';
-                if (!state.queue || state.queue.length === 0) {
-                    if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
+                if (myTicketEl) myTicketEl.textContent = myTicketId ? String(myTicketId).padStart(3, '0') : '---';
+                const currentStr = (state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
+                if (currentEl) currentEl.textContent = currentStr;
+
+                let aheadCount = 0;
+                if (state.queue && myTicketId) {
+                    const index = state.queue.findIndex(p => String(p.id) === String(myTicketId));
+                    if (index !== -1) {
+                        aheadCount = index;
+                    } else if (state.current && Number(myTicketId) === Number(state.current.id)) {
+                        aheadCount = 0;
+                    } else if (state.current && Number(myTicketId) < Number(state.current.id)) {
+                        aheadCount = -1; // Done
+                    } else {
+                        aheadCount = state.queue.length;
+                    }
+                }
+                if (aheadEl) aheadEl.textContent = aheadCount >= 0 ? aheadCount : 0;
+
+                if (state.current && String(state.current.id) === String(myTicketId)) {
+                    if (statusBox) {
+                        statusBox.innerHTML = '<i class="fa-solid fa-bell ml-2 animate-bounce"></i> دورك الآن! يرجى التوجه إلى العيادة فوراً';
+                        statusBox.className = 'bg-amber-400 text-hospital-darkBlue p-4 rounded-2xl text-sm font-black shadow-md animate-pulse';
+                    }
+                } else if (aheadCount === 0 && myTicketId) {
+                    if (statusBox) {
+                        statusBox.textContent = 'أنت التالي في الدور! استعد للخدمة قريباً.';
+                        statusBox.className = 'bg-hospital-lightBlue text-white p-4 rounded-2xl text-xs sm:text-sm font-bold shadow-md';
+                    }
+                } else if (aheadCount < 0) {
+                    if (statusBox) {
+                        statusBox.textContent = 'تمت خدمة تذكرتك مسبقاً. نتمنى لك دوام الصحة والعافية.';
+                        statusBox.className = 'bg-slate-600 text-white p-4 rounded-2xl text-xs sm:text-sm font-bold shadow-md';
+                    }
                 } else {
-                    if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
-                    state.queue.forEach(function(patient) {
-                        const box = document.createElement('div');
-                        box.className = "bg-hospital-sand border border-hospital-accent/30 rounded-xl p-3 text-center shadow-xs flex items-center justify-between px-4";
-                        box.innerHTML = '<span class="text-xl font-black text-hospital-blue">' + String(patient.id).padStart(3, '0') + '</span>' +
-                                        '<span class="text-[10px] text-slate-500 font-bold">انتظار</span>';
-                        queueListEl.appendChild(box);
-                    });
+                    if (statusBox) {
+                        statusBox.textContent = `تم حجز تذكرتك بنجاح. يوجد ${aheadCount} مراجعين قبلك في الانتظار والأرقام تتحرك تباعاً.`;
+                        statusBox.className = 'bg-hospital-blue text-amber-200 p-4 rounded-2xl text-xs sm:text-sm font-bold shadow-md';
+                    }
+                }
+            }
+
+            // 2. Public Display View Render
+            if (userMode === 'public') {
+                const publicCurrentEl = document.getElementById('public-current-num');
+                const queueListEl = document.getElementById('public-queue-list');
+                const queueCountEl = document.getElementById('public-queue-count');
+                const emptyMsgEl = document.getElementById('public-empty-msg');
+
+                const currentStr = (state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
+                if (publicCurrentEl) publicCurrentEl.textContent = currentStr;
+                if (queueCountEl) queueCountEl.textContent = `${state.queue ? state.queue.length : 0} مراجعين`;
+
+                if (queueListEl) {
+                    queueListEl.innerHTML = '';
+                    if (!state.queue || state.queue.length === 0) {
+                        if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
+                    } else {
+                        if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
+                        state.queue.forEach(patient => {
+                            const box = document.createElement('div');
+                            box.className = "bg-hospital-sand border border-hospital-accent/30 rounded-xl p-3 text-center shadow-xs flex items-center justify-between px-4";
+                            box.innerHTML = `<span class="text-xl font-black text-hospital-blue">${String(patient.id).padStart(3, '0')}</span>
+                                             <span class="text-[10px] text-slate-500 font-bold">انتظار</span>`;
+                            queueListEl.appendChild(box);
+                        });
+                    }
                 }
             }
         };
 
-        var queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
-        if (queueChannel) {
-            queueChannel.onmessage = function(event) {
-                if (event.data && event.data.state) {
-                    window.renderStateData(event.data.state);
-                    if (event.data.shouldAnnounce) playChimeAlert();
-                }
-            };
-        }
+        // Initialize view on load
+        window.addEventListener('load', () => {
+            updateViewVisibility();
+        });
     </script>
 
-    <!-- Firebase Realtime Listener -->
+    <!-- Firebase Realtime Sync & Auto-Booking -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
@@ -273,27 +441,49 @@
         };
 
         let lastAnnouncedId = null;
+        let dbInstance, docRefInstance;
 
         try {
             const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
+            dbInstance = getFirestore(app);
             const auth = getAuth(app);
             signInAnonymously(auth).catch(() => {});
 
-            const docRef = doc(db, "queues", "hospital_main_queue");
-            onSnapshot(docRef, (docSnap) => {
+            docRefInstance = doc(dbInstance, "queues", "hospital_main_queue");
+
+            window.triggerTicketBooking = function() {
+                if (!currentCloudState) return;
+                if (!myTicketId) {
+                    let newTicketNum = currentCloudState.nextId || 1;
+                    currentCloudState.queue.push({ id: Number(newTicketNum), time: Date.now() });
+                    currentCloudState.nextId = Number(newTicketNum) + 1;
+                    myTicketId = newTicketNum;
+                    localStorage.setItem('kfh_my_ticket', newTicketNum);
+                    
+                    setDoc(docRefInstance, { state: currentCloudState, shouldAnnounce: false, timestamp: Date.now() }).catch(() => {});
+                }
+                updateViewVisibility();
+                renderAllUI(currentCloudState);
+            };
+
+            onSnapshot(docRefInstance, (docSnap) => {
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
-                        window.renderStateData(cloudData.state);
-                        
-                        // تصدر النغمة فقط في شاشة العرض عندما تكون الإشارة مفعلة
-                        if (cloudData.shouldAnnounce && cloudData.state.current && cloudData.state.current.id) {
-                            if (lastAnnouncedId !== cloudData.state.current.id) {
-                                lastAnnouncedId = cloudData.state.current.id;
+                        currentCloudState = cloudData.state;
+
+                        if (userMode === 'ticket' && !myTicketId) {
+                            window.triggerTicketBooking();
+                        }
+
+                        if (cloudData.shouldAnnounce && currentCloudState.current && currentCloudState.current.id) {
+                            if (lastAnnouncedId !== currentCloudState.current.id) {
+                                lastAnnouncedId = currentCloudState.current.id;
                                 if (typeof playChimeAlert === 'function') playChimeAlert();
                             }
                         }
+
+                        renderAllUI(currentCloudState);
                     }
                 }
             });
