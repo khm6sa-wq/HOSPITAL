@@ -148,7 +148,7 @@
         <p>المملكة العربية السعودية - وزارة الصحة © نظام إدارة الطوابير الآلي</p>
     </footer>
 
-    <!-- Display Logic & Fullscreen & Firebase -->
+    <!-- Display Logic & Fullscreen & Audio Alert & Firebase -->
     <script>
         // Fullscreen Toggle Function
         window.toggleFullscreen = function() {
@@ -160,6 +160,46 @@
                 }
             }
         };
+
+        // Pleasant Electronic Chime / Alert Sound (Replaces Speech)
+        function playChimeAlert() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // First tone
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+                gain1.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                
+                osc1.start();
+                osc1.stop(audioCtx.currentTime + 0.3);
+
+                // Second higher tone (Chime effect)
+                setTimeout(() => {
+                    try {
+                        const osc2 = audioCtx.createOscillator();
+                        const gain2 = audioCtx.createGain();
+                        osc2.type = 'sine';
+                        osc2.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+                        gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                        
+                        osc2.connect(gain2);
+                        gain2.connect(audioCtx.destination);
+                        
+                        osc2.start();
+                        osc2.stop(audioCtx.currentTime + 0.5);
+                    } catch(e) {}
+                }, 200);
+
+            } catch (e) {}
+        }
 
         setInterval(() => {
             try {
@@ -184,19 +224,11 @@
         let state = { queue: [], current: null, nextId: 1 };
         let lastAnnouncedId = null;
 
-        function announceCurrent() {
+        function checkAndAlert() {
             if (state && state.current && state.current.id) {
                 if (lastAnnouncedId !== state.current.id) {
                     lastAnnouncedId = state.current.id;
-                    try {
-                        if ('speechSynthesis' in window) {
-                            window.speechSynthesis.cancel();
-                            const msg = new SpeechSynthesisUtterance(`رقم المراجع ${state.current.id}`);
-                            msg.lang = 'ar-SA';
-                            msg.rate = 0.9;
-                            window.speechSynthesis.speak(msg);
-                        }
-                    } catch (e) {}
+                    playChimeAlert();
                 }
             }
         }
@@ -248,33 +280,4 @@
             authDomain: "hospital-ba989.firebaseapp.com",
             projectId: "hospital-ba989",
             storageBucket: "hospital-ba989.firebasestorage.app",
-            messagingSenderId: "30608387919",
-            appId: "1:30608387919:web:ee0f83efabc514e5ff1f3a",
-            measurementId: "G-6R34PWFVWK"
-        };
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            const auth = getAuth(app);
-            signInAnonymously(auth).catch(() => {});
-
-            const docRef = doc(db, "queues", "hospital_main_queue");
-            onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const cloudData = docSnap.data();
-                    if (cloudData && cloudData.state) {
-                        state = cloudData.state;
-                        if (cloudData.shouldAnnounce) {
-                            announceCurrent();
-                        }
-                        if (typeof window.renderDisplay === 'function') {
-                            window.renderDisplay();
-                        }
-                    }
-                }
-            }, () => {});
-        } catch (e) {}
-    </script>
-</body>
-</html>
+            messagingSenderId: "
