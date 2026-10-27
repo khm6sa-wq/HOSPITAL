@@ -47,6 +47,9 @@
         .card-shadow {
             box-shadow: 0 20px 40px -10px rgba(15, 55, 89, 0.12);
         }
+        .royal-glow {
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+        }
         .call-flash {
             animation: flashGold 1s ease-in-out 3;
         }
@@ -76,17 +79,17 @@
     <header class="bg-hospital-blue text-white border-b-4 border-hospital-accent shadow-2xl py-4 px-8 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             
-            <!-- الشعار الرسمي الدقيق المطابق لصورتك تماماً -->
-            <div class="flex items-center space-x-4 space-x-reverse">
-                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white p-1 border-2 border-hospital-accent shadow-xl shrink-0 flex items-center justify-center overflow-hidden">
+            <!-- الشعار بحجم كبير وفخم بجانب الاسم -->
+            <div class="flex items-center space-x-5 space-x-reverse">
+                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white p-1.5 border-3 border-hospital-accent shadow-2xl royal-glow shrink-0 flex items-center justify-center overflow-hidden">
                     <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-full h-full object-contain">
                 </div>
 
-                <div class="flex flex-col">
-                    <h1 class="text-2xl sm:text-3xl font-bold font-amiri tracking-tight text-white drop-shadow-md">
+                <div class="flex flex-col justify-center">
+                    <h1 class="text-3xl sm:text-4xl font-bold font-amiri tracking-tight text-white drop-shadow-md">
                         مُسْتَشْفَى المَلِك فَيْصَل
                     </h1>
-                    <span class="text-xs sm:text-sm font-semibold tracking-wider text-amber-200 mt-0.5">
+                    <span class="text-sm sm:text-base font-semibold tracking-wider text-amber-200 mt-1">
                         King Faisal Hospital
                     </span>
                 </div>
