@@ -79,9 +79,19 @@
                     <p class="text-sm text-saudi-lightGold font-semibold">صالة انتظار المراجعين الرئيسية</p>
                 </div>
             </div>
-            <div class="text-left bg-saudi-darkGreen/50 px-6 py-3 rounded-2xl border border-saudi-gold/40">
-                <div id="live-clock" class="text-2xl font-black text-saudi-gold tracking-widest">00:00:00</div>
-                <div id="live-date" class="text-xs text-saudi-lightGold font-bold mt-0.5">--/--/----</div>
+
+            <div class="flex items-center gap-4">
+                <!-- Fullscreen Toggle Button -->
+                <button onclick="toggleFullScreen()" class="bg-saudi-gold hover:bg-amber-400 text-saudi-darkGreen px-4 py-3 rounded-2xl text-xs font-black shadow transition flex items-center gap-2 cursor-pointer border border-saudi-darkGreen/20">
+                    <i class="fa-solid fa-expand text-base"></i>
+                    <span class="hidden sm:inline">تكبير الشاشة</span>
+                </button>
+
+                <!-- Clock Box (12-Hour format) -->
+                <div class="text-left bg-saudi-darkGreen/50 px-6 py-3 rounded-2xl border border-saudi-gold/40 min-w-[160px]">
+                    <div id="live-clock" class="text-xl sm:text-2xl font-black text-saudi-gold tracking-widest text-center">00:00:00 ص</div>
+                    <div id="live-date" class="text-[11px] text-saudi-lightGold font-bold mt-0.5 text-center">--/--/----</div>
+                </div>
             </div>
         </div>
     </header>
@@ -156,6 +166,17 @@
             } catch (e) {}
         };
 
+        // Fullscreen Toggle Function
+        window.toggleFullScreen = function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                }
+            }
+        };
+
         let state = {
             queue: [],
             current: null
@@ -163,13 +184,26 @@
 
         let lastAnnouncedId = null;
 
-        // Live Clock
+        // Live Clock (12-Hour format with AM/PM)
         setInterval(() => {
             const now = new Date();
             const clockEl = document.getElementById('live-clock');
             const dateEl = document.getElementById('live-date');
-            if(clockEl) clockEl.textContent = now.toLocaleTimeString('en-US', { hour12: false });
-            if(dateEl) dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            if(clockEl) {
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'م' : 'ص';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                const formattedHours = String(hours).padStart(2, '0');
+                clockEl.textContent = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
+            }
+
+            if(dateEl) {
+                dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            }
         }, 1000);
 
         try {
@@ -201,4 +235,120 @@
 
             const docRef = doc(db, "queues", "hospital_main_queue");
             onSnapshot(docRef, (docSnap) => {
-                if
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if (cloudData && cloudData.state) {
+                        state = cloudData.state;
+                        const shouldAnnounce = cloudData.shouldAnnounce;
+
+                        if (state.current && state.current.id !== lastAnnouncedId) {
+                            lastAnnouncedId = state.current.id;
+                            playChimeAndSpeak(state.current.id);
+                            flashLoungeDisplay();
+                        } else if (shouldAnnounce && state.current && state.current.id === lastAnnouncedId) {
+                            playChimeAndSpeak(state.current.id);
+                            flashLoungeDisplay();
+                        }
+
+                        renderDisplay();
+                    }
+                }
+            }, () => {});
+        } catch (e) {}
+
+        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
+        if (queueChannel) {
+            queueChannel.onmessage = (event) => {
+                if (event.data && event.data.state) {
+                    state = event.data.state;
+                    const shouldAnnounce = event.data.shouldAnnounce;
+
+                    if (state.current && (state.current.id !== lastAnnouncedId || shouldAnnounce)) {
+                        lastAnnouncedId = state.current.id;
+                        playChimeAndSpeak(state.current.id);
+                        flashLoungeDisplay();
+                    }
+
+                    renderDisplay();
+                }
+            };
+        }
+
+        function playChimeAndSpeak(ticketNumber) {
+            try {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const freqs = [659.25, 880, 1318.51];
+                freqs.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (idx * 0.15));
+                    gain.gain.setValueAtTime(0, audioCtx.currentTime + (idx * 0.15));
+                    gain.gain.linearRampToValueAtTime(0.6, audioCtx.currentTime + (idx * 0.15) + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (idx * 0.15) + 0.8);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + (idx * 0.15));
+                    osc.stop(audioCtx.currentTime + (idx * 0.15) + 0.8);
+                });
+
+                setTimeout(() => {
+                    if ('speechSynthesis' in window) {
+                        const formattedNum = String(ticketNumber);
+                        const text = `الرقم ${formattedNum}، الرجاء التوجه إلى الاستقبال`;
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        utterance.lang = 'ar-SA';
+                        utterance.rate = 0.9;
+                        window.speechSynthesis.speak(utterance);
+                    }
+                }, 1000);
+            } catch (e) {}
+        }
+
+        function flashLoungeDisplay() {
+            const loungeCard = document.getElementById('lounge-card-container');
+            if (loungeCard) {
+                loungeCard.classList.add('call-flash');
+                setTimeout(() => loungeCard.classList.remove('call-flash'), 3000);
+            }
+        }
+
+        function renderDisplay() {
+            const currentNumEl = document.getElementById('display-current-num');
+            const queueListEl = document.getElementById('display-queue-list');
+            const queueCounterEl = document.getElementById('display-queue-counter');
+            const emptyMsgEl = document.getElementById('display-empty-msg');
+
+            const currentStr = state.current ? String(state.current.id).padStart(3, '0') : '---';
+            if (currentNumEl) currentNumEl.textContent = currentStr;
+            if (queueCounterEl) queueCounterEl.textContent = `${state.queue.length} مراجعين`;
+
+            if (queueListEl) {
+                queueListEl.innerHTML = '';
+                if (state.queue.length === 0) {
+                    if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
+                } else {
+                    if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
+                    state.queue.forEach((patient) => {
+                        const box = document.createElement('div');
+                        box.className = "bg-saudi-sand border-2 border-saudi-gold/40 rounded-2xl p-4 text-center shadow-sm flex flex-col items-center justify-center";
+                        box.innerHTML = `
+                            <span class="text-3xl sm:text-4xl font-black text-saudi-darkGreen">${String(patient.id).padStart(3, '0')}</span>
+                        `;
+                        queueListEl.appendChild(box);
+                    });
+                }
+            }
+        }
+
+        renderDisplay();
+    </script>
+</body>
+</html>
