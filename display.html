@@ -291,8 +291,8 @@
             updateViewVisibility();
 
             if (mode === 'ticket') {
-                if (typeof window.triggerTicketBooking === 'function') {
-                    await window.triggerTicketBooking();
+                if (typeof window.executeTicketBooking === 'function') {
+                    await window.executeTicketBooking();
                 }
             } else {
                 renderAllUI(currentCloudState);
@@ -412,7 +412,7 @@
         });
     </script>
 
-    <!-- Firebase Realtime Sync & Robust Booking Handler -->
+    <!-- Firebase Realtime Sync & Unified Queue Path -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -429,75 +429,66 @@
         };
 
         let lastAnnouncedId = null;
-        let dbInstance, docRefInstance;
 
         try {
             const app = initializeApp(firebaseConfig);
-            dbInstance = getFirestore(app);
+            const db = getFirestore(app);
             const auth = getAuth(app);
             
             await signInAnonymously(auth);
-            docRefInstance = doc(dbInstance, "queues", "hospital_main_queue");
-            window.docRefInstance = docRefInstance; // ربط مرجعي عام
+            const mainDocRef = doc(db, "queues", "hospital_main_queue");
 
-            window.triggerTicketBooking = async function() {
+            // دالة الحجز الموحدة والمضمونة لتتزامن لحظياً مع لوحة الاستقبال
+            window.executeTicketBooking = async function() {
                 try {
                     const statusBox = document.getElementById('status-box');
-                    if (statusBox) statusBox.textContent = 'جاري تسجيل رقمك بالسحابة...';
+                    if (statusBox) statusBox.textContent = 'جاري حجز رقمك وإرساله لنظام الاستقبال...';
 
-                    // التأكد من جاهزية مرجع قاعدة البيانات
-                    let ref = docRefInstance;
-                    let attempts = 0;
-                    while (!ref && attempts < 10) {
-                        await new Promise(r => setTimeout(r, 200));
-                        ref = window.docRefInstance;
-                        attempts++;
-                    }
-
-                    if (!ref) {
-                        alert('جاري تهيئة الاتصال، يرجى إعادة محاولة النقر بعد ثانية.');
-                        return;
-                    }
-
-                    const docSnap = await getDoc(ref);
+                    const docSnap = await getDoc(mainDocRef);
                     let state = { queue: [], current: null, nextId: 1 };
+                    
                     if (docSnap.exists() && docSnap.data().state) {
                         state = docSnap.data().state;
                     }
 
                     if (!myTicketId) {
-                        let newTicketNum = state.nextId || 1;
+                        let newTicketNum = Number(state.nextId || 1);
                         if (!state.queue) state.queue = [];
                         
-                        // التحقق من عدم تكرار الرقم مسبقاً
-                        const exists = state.queue.some(p => p.id === newTicketNum) || (state.current && state.current.id === newTicketNum);
-                        if (!exists) {
-                            state.queue.push({ id: Number(newTicketNum), time: Date.now() });
-                            state.nextId = Number(newTicketNum) + 1;
-                            
-                            myTicketId = newTicketNum;
-                            localStorage.setItem('kfh_my_ticket', newTicketNum);
+                        // إضافة الرقم لقائمة الانتظار وتحديث العداد التالي
+                        state.queue.push({ id: newTicketNum, time: Date.now() });
+                        state.nextId = newTicketNum + 1;
+                        
+                        myTicketId = newTicketNum;
+                        localStorage.setItem('kfh_my_ticket', newTicketNum);
 
-                            await setDoc(ref, { state: state, shouldAnnounce: false, timestamp: Date.now() });
-                        }
+                        // حفظ الحالة فوراً في السحابة لترها لوحة الاستقبال فوراً
+                        await setDoc(mainDocRef, { 
+                            state: state, 
+                            shouldAnnounce: false, 
+                            timestamp: Date.now() 
+                        });
                     }
 
                     currentCloudState = state;
                     updateViewVisibility();
                     renderAllUI(currentCloudState);
                 } catch (e) {
-                    console.error("Booking error:", e);
+                    console.error("Booking sync error:", e);
+                    const statusBox = document.getElementById('status-box');
+                    if (statusBox) statusBox.textContent = 'حدث خطأ في الاتصال، يجدر إعادة المحاولة.';
                 }
             };
 
-            onSnapshot(docRefInstance, (docSnap) => {
+            // الاستماع اللحظي لأي تغير يحدث في لوحة الاستقبال أو الحجوزات
+            onSnapshot(mainDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
                         currentCloudState = cloudData.state;
 
                         if (userMode === 'ticket' && !myTicketId) {
-                            window.triggerTicketBooking();
+                            window.executeTicketBooking();
                         }
 
                         if (cloudData.shouldAnnounce && currentCloudState.current && currentCloudState.current.id) {
@@ -512,7 +503,7 @@
                 }
             });
         } catch (e) {
-            console.error("Firebase init error:", e);
+            console.error("Firebase connection error:", e);
         }
     </script>
 </body>
