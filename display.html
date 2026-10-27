@@ -104,7 +104,7 @@
     <!-- Main Content Area -->
     <main class="max-w-3xl w-full mx-auto px-6 py-8 flex-grow flex flex-col justify-center space-y-6">
 
-        <!-- STEP 1: CHOICE SCREEN (Appears on first scan if no mode chosen) -->
+        <!-- STEP 1: CHOICE SCREEN -->
         <div id="view-choice" class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6">
             <div class="w-16 h-16 bg-hospital-sand border-2 border-hospital-accent rounded-full flex items-center justify-center mx-auto text-hospital-accent text-2xl shadow-inner">
                 <i class="fa-solid fa-hand-holding-medical"></i>
@@ -129,7 +129,7 @@
             </div>
         </div>
 
-        <!-- STEP 2: PERSONAL TICKET VIEW (Hidden initially) -->
+        <!-- STEP 2: PERSONAL TICKET VIEW -->
         <div id="view-ticket" class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 hidden">
             <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
             
@@ -161,16 +161,11 @@
                 <button onclick="resetMySelection()" class="text-xs font-bold text-slate-500 hover:text-hospital-blue underline transition-colors cursor-pointer">
                     <i class="fa-solid fa-arrow-right ml-1"></i> العودة للقائمة الرئيسية
                 </button>
-                <span class="text-slate-300">|</span>
-                <button onclick="requestNewTicket()" class="text-xs font-bold text-hospital-blue underline hover:text-hospital-accent transition-colors cursor-pointer">
-                    <i class="fa-solid fa-rotate-right ml-1"></i> طلب تذكرة جديدة
-                </button>
             </div>
         </div>
 
-        <!-- STEP 3: PUBLIC DISPLAY VIEW (Hidden initially) -->
+        <!-- STEP 3: PUBLIC DISPLAY VIEW -->
         <div id="view-public" class="space-y-6 hidden">
-            <!-- Current Serving Box -->
             <div class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 relative overflow-hidden">
                 <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
                 
@@ -188,7 +183,6 @@
                 </div>
             </div>
 
-            <!-- Queue List Box -->
             <div class="bg-white rounded-3xl p-6 border-2 border-slate-200/85 card-shadow space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                     <div class="flex items-center gap-3">
@@ -220,7 +214,7 @@
         <p>المملكة العربية السعودية - وزارة الصحة © نظام إدارة الطوابير الآلي</p>
     </footer>
 
-    <!-- Logic & UI Controller Script -->
+    <!-- Logic Script -->
     <script>
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
@@ -232,7 +226,6 @@
             }
         }
 
-        // Electronic Chime Alert Sound
         function playChimeAlert() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -288,16 +281,17 @@
         }, 1000);
 
         let currentCloudState = { queue: [], current: null, nextId: 1 };
-        let userMode = localStorage.getItem('kfh_user_mode'); // 'ticket' or 'public'
+        let userMode = localStorage.getItem('kfh_user_mode');
         let myTicketId = localStorage.getItem('kfh_my_ticket');
 
         window.selectMode = function(mode) {
             userMode = mode;
             localStorage.setItem('kfh_user_mode', mode);
 
-            if (mode === 'ticket' && !myTicketId) {
-                // Trigger booking via Firebase listener or local generation
-                window.triggerTicketBooking();
+            if (mode === 'ticket') {
+                if (typeof window.triggerTicketBooking === 'function') {
+                    window.triggerTicketBooking();
+                }
             } else {
                 updateViewVisibility();
                 renderAllUI(currentCloudState);
@@ -310,12 +304,6 @@
             localStorage.removeItem('kfh_my_ticket');
             myTicketId = null;
             updateViewVisibility();
-        };
-
-        window.requestNewTicket = function() {
-            localStorage.removeItem('kfh_my_ticket');
-            myTicketId = null;
-            window.triggerTicketBooking();
         };
 
         window.updateViewVisibility = function() {
@@ -340,7 +328,6 @@
             if (!state) return;
             currentCloudState = state;
 
-            // 1. Ticket View Render
             if (userMode === 'ticket') {
                 const myTicketEl = document.getElementById('my-ticket-num');
                 const currentEl = document.getElementById('ticket-current');
@@ -359,7 +346,7 @@
                     } else if (state.current && Number(myTicketId) === Number(state.current.id)) {
                         aheadCount = 0;
                     } else if (state.current && Number(myTicketId) < Number(state.current.id)) {
-                        aheadCount = -1; // Done
+                        aheadCount = -1;
                     } else {
                         aheadCount = state.queue.length;
                     }
@@ -389,7 +376,6 @@
                 }
             }
 
-            // 2. Public Display View Render
             if (userMode === 'public') {
                 const publicCurrentEl = document.getElementById('public-current-num');
                 const queueListEl = document.getElementById('public-queue-list');
@@ -418,17 +404,16 @@
             }
         };
 
-        // Initialize view on load
         window.addEventListener('load', () => {
             updateViewVisibility();
         });
     </script>
 
-    <!-- Firebase Realtime Sync & Auto-Booking -->
+    <!-- Firebase Realtime Sync & Secure Booking Transaction -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
@@ -447,23 +432,38 @@
             const app = initializeApp(firebaseConfig);
             dbInstance = getFirestore(app);
             const auth = getAuth(app);
-            signInAnonymously(auth).catch(() => {});
+            
+            // الانتظار حتى اكتمال تسجيل الدخول المجهول بنجاح لتجنب حظر الأمان
+            await signInAnonymously(auth);
 
             docRefInstance = doc(dbInstance, "queues", "hospital_main_queue");
 
-            window.triggerTicketBooking = function() {
-                if (!currentCloudState) return;
-                if (!myTicketId) {
-                    let newTicketNum = currentCloudState.nextId || 1;
-                    currentCloudState.queue.push({ id: Number(newTicketNum), time: Date.now() });
-                    currentCloudState.nextId = Number(newTicketNum) + 1;
-                    myTicketId = newTicketNum;
-                    localStorage.setItem('kfh_my_ticket', newTicketNum);
-                    
-                    setDoc(docRefInstance, { state: currentCloudState, shouldAnnounce: false, timestamp: Date.now() }).catch(() => {});
+            window.triggerTicketBooking = async function() {
+                try {
+                    const docSnap = await getDoc(docRefInstance);
+                    let state = { queue: [], current: null, nextId: 1 };
+                    if (docSnap.exists() && docSnap.data().state) {
+                        state = docSnap.data().state;
+                    }
+
+                    if (!myTicketId) {
+                        let newTicketNum = state.nextId || 1;
+                        if (!state.queue) state.queue = [];
+                        state.queue.push({ id: Number(newTicketNum), time: Date.now() });
+                        state.nextId = Number(newTicketNum) + 1;
+                        
+                        myTicketId = newTicketNum;
+                        localStorage.setItem('kfh_my_ticket', newTicketNum);
+
+                        await setDoc(docRefInstance, { state: state, shouldAnnounce: false, timestamp: Date.now() });
+                    }
+
+                    currentCloudState = state;
+                    updateViewVisibility();
+                    renderAllUI(currentCloudState);
+                } catch (e) {
+                    console.error("Booking error:", e);
                 }
-                updateViewVisibility();
-                renderAllUI(currentCloudState);
             };
 
             onSnapshot(docRefInstance, (docSnap) => {
