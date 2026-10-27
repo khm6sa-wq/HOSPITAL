@@ -50,19 +50,6 @@
         .royal-glow {
             box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
         }
-        .barcode-lines {
-            background: repeating-linear-gradient(
-                90deg,
-                #0F3759,
-                #0F3759 2px,
-                transparent 2px,
-                transparent 4px,
-                #0F3759 4px,
-                #0F3759 7px,
-                transparent 7px,
-                transparent 9px
-            );
-        }
     </style>
 </head>
 <body class="pattern-bg text-slate-800 min-h-screen flex flex-col justify-between">
@@ -117,7 +104,7 @@
     <!-- Main Controller Area -->
     <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow grid grid-cols-1 md:grid-cols-3 gap-8">
 
-        <!-- Left Column: Actions & Ticket Preview with Barcode (1 Column) -->
+        <!-- Left Column: Actions & Quick Stats (1 Column) -->
         <div class="space-y-6 md:col-span-1">
             
             <!-- Actions Card -->
@@ -146,26 +133,6 @@
                     <i class="fa-solid fa-trash-can"></i>
                     <span>تصفير النظام بالكامل</span>
                 </button>
-            </div>
-
-            <!-- Ticket & Barcode Preview Card -->
-            <div class="bg-white rounded-3xl p-6 border-2 border-hospital-accent/40 card-shadow space-y-3 text-center">
-                <div class="text-xs font-bold text-slate-400 flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-ticket text-hospital-accent"></i>
-                    <span>معاينة التذكرة والباركود</span>
-                </div>
-                
-                <div class="bg-hospital-sand border border-dashed border-hospital-accent rounded-2xl p-4 space-y-2">
-                    <div class="text-xs font-bold text-hospital-darkBlue">مستشفى الملك فيصل</div>
-                    <div id="ticket-number-preview" class="text-4xl font-black text-hospital-blue">000</div>
-                    <div class="text-[10px] text-slate-500">رقم الانتظار الخاص بالمراجع</div>
-                    
-                    <!-- Barcode Graphic Element -->
-                    <div class="pt-2">
-                        <div class="w-40 h-10 mx-auto barcode-lines rounded shadow-xs"></div>
-                        <div id="ticket-barcode-text" class="text-[9px] font-mono text-slate-600 mt-1 tracking-widest">*KFH-2026-000*</div>
-                    </div>
-                </div>
             </div>
 
             <!-- Stats Card -->
@@ -365,18 +332,12 @@
             const emptyMsgEl = document.getElementById('ctrl-empty-msg');
             const statWaitingEl = document.getElementById('stat-waiting');
             const statNextIdEl = document.getElementById('stat-next-id');
-            const ticketNumPreview = document.getElementById('ticket-number-preview');
-            const ticketBarcodeText = document.getElementById('ticket-barcode-text');
 
             const currentStr = state.current ? String(state.current.id).padStart(3, '0') : '---';
             if (currentNumEl) currentNumEl.textContent = currentStr;
             if (queueCounterEl) queueCounterEl.textContent = `${state.queue.length} مراجعين`;
             if (statWaitingEl) statWaitingEl.textContent = state.queue.length;
             if (statNextIdEl) statNextIdEl.textContent = String(state.nextId).padStart(3, '0');
-
-            const previewIdStr = String(state.nextId).padStart(3, '0');
-            if (ticketNumPreview) ticketNumPreview.textContent = previewIdStr;
-            if (ticketBarcodeText) ticketBarcodeText.textContent = `*KFH-2026-${previewIdStr}*`;
 
             if (queueListEl) {
                 queueListEl.innerHTML = '';
