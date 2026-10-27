@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- QRCode Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -104,7 +106,7 @@
     <!-- Main Controller Area -->
     <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow grid grid-cols-1 md:grid-cols-3 gap-8">
 
-        <!-- Left Column: Actions & Quick Stats (1 Column) -->
+        <!-- Left Column: Actions & Ticket QR Preview (1 Column) -->
         <div class="space-y-6 md:col-span-1">
             
             <!-- Actions Card -->
@@ -133,6 +135,24 @@
                     <i class="fa-solid fa-trash-can"></i>
                     <span>تصفير النظام بالكامل</span>
                 </button>
+            </div>
+
+            <!-- Ticket & QR Code Preview Card -->
+            <div class="bg-white rounded-3xl p-6 border-2 border-hospital-accent/40 card-shadow space-y-3 text-center">
+                <div class="text-xs font-bold text-slate-400 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-qrcode text-hospital-accent"></i>
+                    <span>باركود تذكرة المراجع (QR Code)</span>
+                </div>
+                
+                <div class="bg-hospital-sand border border-dashed border-hospital-accent rounded-2xl p-4 space-y-3 flex flex-col items-center">
+                    <div class="text-xs font-bold text-hospital-darkBlue">مستشفى الملك فيصل</div>
+                    <div id="ticket-number-preview" class="text-4xl font-black text-hospital-blue">001</div>
+                    
+                    <!-- Dynamic QR Code Container -->
+                    <div id="qrcode-container" class="bg-white p-3 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center"></div>
+                    
+                    <div class="text-[10px] text-slate-500 font-medium">امسح الرمز لمتابعة رقم الدور</div>
+                </div>
             </div>
 
             <!-- Stats Card -->
@@ -218,147 +238,4 @@
                 const seconds = String(now.getSeconds()).padStart(2, '0');
                 const ampm = hours >= 12 ? 'م' : 'ص';
                 hours = hours % 12;
-                hours = hours ? hours : 12;
-                const formattedHours = String(hours).padStart(2, '0');
-                clockEl.textContent = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
-            }
-
-            if(dateEl) {
-                dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            }
-        }, 1000);
-
-        let state = {
-            queue: [],
-            current: null,
-            nextId: 1
-        };
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
-            authDomain: "hospital-ba989.firebaseapp.com",
-            projectId: "hospital-ba989",
-            storageBucket: "hospital-ba989.firebasestorage.app",
-            messagingSenderId: "30608387919",
-            appId: "1:30608387919:web:ee0f83efabc514e5ff1f3a",
-            measurementId: "G-6R34PWFVWK"
-        };
-
-        let db = null;
-        const docId = "hospital_main_queue";
-        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            const auth = getAuth(app);
-            signInAnonymously(auth).catch(() => {});
-
-            const docRef = doc(db, "queues", docId);
-            onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const cloudData = docSnap.data();
-                    if (cloudData && cloudData.state) {
-                        state = cloudData.state;
-                        renderController();
-                    }
-                }
-            }, () => {});
-        } catch (e) {}
-
-        try {
-            const localSaved = localStorage.getItem('kfh_queue_state');
-            if (localSaved) {
-                const parsed = JSON.parse(localSaved);
-                if (parsed && parsed.state) {
-                    state = parsed.state;
-                }
-            }
-        } catch (e) {}
-
-        function saveAndSync(shouldAnnounce = false) {
-            try {
-                localStorage.setItem('kfh_queue_state', JSON.stringify({ state }));
-            } catch (e) {}
-
-            if (queueChannel) {
-                queueChannel.postMessage({ state, shouldAnnounce, timestamp: Date.now() });
-            }
-
-            if (db) {
-                const docRef = doc(db, "queues", docId);
-                setDoc(docRef, { state, shouldAnnounce, timestamp: Date.now() }).catch(() => {});
-            }
-
-            renderController();
-        }
-
-        window.addNewPatient = function() {
-            const newPatient = { id: state.nextId, time: Date.now() };
-            state.queue.push(newPatient);
-            state.nextId++;
-            saveAndSync(false);
-        };
-
-        window.callNextPatient = function() {
-            if (state.queue.length === 0) {
-                alert('لا يوجد مراجعين في قائمة الانتظار حالياً');
-                return;
-            }
-            const nextPatient = state.queue.shift();
-            state.current = nextPatient;
-            saveAndSync(true);
-        };
-
-        window.recallCurrentPatient = function() {
-            if (!state.current) {
-                alert('لا يوجد مراجع حالي لإعادة ندائه');
-                return;
-            }
-            saveAndSync(true);
-        };
-
-        window.resetQueueSystem = function() {
-            if (confirm('هل أنت متأكد من تصفير النظام وإعادة ضبط الأعداد بالكامل؟')) {
-                state = { queue: [], current: null, nextId: 1 };
-                saveAndSync(false);
-            }
-        };
-
-        window.renderController = function() {
-            const currentNumEl = document.getElementById('ctrl-current-num');
-            const queueListEl = document.getElementById('ctrl-queue-list');
-            const queueCounterEl = document.getElementById('ctrl-queue-counter');
-            const emptyMsgEl = document.getElementById('ctrl-empty-msg');
-            const statWaitingEl = document.getElementById('stat-waiting');
-            const statNextIdEl = document.getElementById('stat-next-id');
-
-            const currentStr = state.current ? String(state.current.id).padStart(3, '0') : '---';
-            if (currentNumEl) currentNumEl.textContent = currentStr;
-            if (queueCounterEl) queueCounterEl.textContent = `${state.queue.length} مراجعين`;
-            if (statWaitingEl) statWaitingEl.textContent = state.queue.length;
-            if (statNextIdEl) statNextIdEl.textContent = String(state.nextId).padStart(3, '0');
-
-            if (queueListEl) {
-                queueListEl.innerHTML = '';
-                if (state.queue.length === 0) {
-                    if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
-                } else {
-                    if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
-                    state.queue.forEach((patient) => {
-                        const box = document.createElement('div');
-                        box.className = "bg-hospital-sand border border-hospital-accent/30 rounded-xl p-3 text-center shadow-xs flex items-center justify-between px-4";
-                        box.innerHTML = `
-                            <span class="text-xl font-black text-hospital-blue">${String(patient.id).padStart(3, '0')}</span>
-                            <span class="text-[10px] text-slate-400 font-bold">انتظار</span>
-                        `;
-                        queueListEl.appendChild(box);
-                    });
-                }
-            }
-        }
-
-        renderController();
-    </script>
-</body>
-</html>
+                hours = hours ? hours :
