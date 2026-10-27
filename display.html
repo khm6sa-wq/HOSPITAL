@@ -288,12 +288,13 @@
             userMode = mode;
             localStorage.setItem('kfh_user_mode', mode);
 
+            updateViewVisibility();
+
             if (mode === 'ticket') {
                 if (typeof window.triggerTicketBooking === 'function') {
                     window.triggerTicketBooking();
                 }
             } else {
-                updateViewVisibility();
                 renderAllUI(currentCloudState);
             }
         };
@@ -310,6 +311,8 @@
             const choiceEl = document.getElementById('view-choice');
             const ticketEl = document.getElementById('view-ticket');
             const publicEl = document.getElementById('view-public');
+
+            if (!choiceEl || !ticketEl || !publicEl) return;
 
             choiceEl.classList.add('hidden');
             ticketEl.classList.add('hidden');
@@ -409,7 +412,7 @@
         });
     </script>
 
-    <!-- Firebase Realtime Sync & Secure Booking Transaction -->
+    <!-- Firebase Realtime Sync & Non-blocking Booking -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -433,8 +436,8 @@
             dbInstance = getFirestore(app);
             const auth = getAuth(app);
             
-            // الانتظار حتى اكتمال تسجيل الدخول المجهول بنجاح لتجنب حظر الأمان
-            await signInAnonymously(auth);
+            // تسجيل دخول مجهول بدون حظر التنفيذ
+            signInAnonymously(auth).catch(err => console.log(err));
 
             docRefInstance = doc(dbInstance, "queues", "hospital_main_queue");
 
