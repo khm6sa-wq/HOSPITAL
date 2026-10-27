@@ -147,7 +147,7 @@
         <p>المملكة العربية السعودية - وزارة الصحة © نظام إدارة الطوابير الآلي</p>
     </footer>
 
-    <!-- Main Independent Script -->
+    <!-- Script & Chime Alert (Only on Display) -->
     <script>
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
@@ -159,6 +159,7 @@
             }
         }
 
+        // Electronic Chime Alert Sound
         function playChimeAlert() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -244,7 +245,6 @@
             }
         };
 
-        // Channel Sync Fallback
         var queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
         if (queueChannel) {
             queueChannel.onmessage = function(event) {
@@ -256,7 +256,7 @@
         }
     </script>
 
-    <!-- Firebase SDK Setup -->
+    <!-- Firebase Realtime Listener -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -287,6 +287,7 @@
                     if (cloudData && cloudData.state) {
                         window.renderStateData(cloudData.state);
                         
+                        // تصدر النغمة فقط في شاشة العرض عندما تكون الإشارة مفعلة
                         if (cloudData.shouldAnnounce && cloudData.state.current && cloudData.state.current.id) {
                             if (lastAnnouncedId !== cloudData.state.current.id) {
                                 lastAnnouncedId = cloudData.state.current.id;
