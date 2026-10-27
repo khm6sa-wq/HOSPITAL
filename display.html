@@ -88,6 +88,12 @@
             </div>
 
             <div class="flex items-center gap-4">
+                <!-- Fullscreen Toggle Button -->
+                <button onclick="toggleFullscreen()" class="bg-hospital-accent hover:bg-amber-400 text-hospital-darkBlue px-4 py-3 rounded-2xl text-xs font-black shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 cursor-pointer border border-white/30">
+                    <i class="fa-solid fa-expand text-base"></i>
+                    <span>تكبير الشاشة</span>
+                </button>
+
                 <div class="text-left bg-hospital-darkBlue px-6 py-2.5 rounded-2xl border border-hospital-accent/40 min-w-[160px] shadow-inner">
                     <div id="live-clock" class="text-xl sm:text-2xl font-black text-hospital-accent tracking-widest text-center">00:00:00 ص</div>
                     <div id="live-date" class="text-[10px] text-amber-200 font-bold mt-0.5 text-center">--/--/----</div>
@@ -96,14 +102,14 @@
         </div>
     </header>
 
-    <!-- Main Display Area -->
-    <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+    <!-- Main Display Area (Vertical Stack: Current on top, Queue below) -->
+    <main class="max-w-4xl w-full mx-auto px-6 py-8 flex-grow flex flex-col space-y-6">
 
-        <!-- Left Column: Current Serving Box (2 Columns) -->
-        <div class="md:col-span-2 bg-white rounded-3xl p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 relative overflow-hidden">
+        <!-- Current Serving Box -->
+        <div class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 relative overflow-hidden">
             <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
             
-            <div class="text-hospital-darkBlue font-black text-2xl flex items-center justify-center gap-3">
+            <div class="text-hospital-darkBlue font-black text-2xl sm:text-3xl flex items-center justify-center gap-3">
                 <i class="fa-solid fa-bullhorn text-hospital-accent animate-bounce text-3xl"></i>
                 <span>الرقم الحالي تحت الخدمة</span>
             </div>
@@ -112,25 +118,25 @@
                 000
             </div>
 
-            <div class="text-sm font-bold text-slate-500">
+            <div class="text-sm sm:text-base font-bold text-slate-500">
                 يرجى من المراجع الكريم التوجه إلى العيادة المخصصة فوراً عند النداء.
             </div>
         </div>
 
-        <!-- Right Column: Queue List (1 Column) -->
-        <div class="md:col-span-1 bg-white rounded-3xl p-6 border-2 border-slate-200/85 card-shadow space-y-4 self-stretch flex flex-col">
+        <!-- Queue List Box (Placed Below) -->
+        <div class="bg-white rounded-3xl p-6 border-2 border-slate-200/85 card-shadow space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div class="flex items-center gap-3">
                     <div class="w-4 h-4 rounded-full bg-hospital-accent"></div>
-                    <h2 class="text-lg font-black text-hospital-darkBlue">قائمة الانتظار</h2>
+                    <h2 class="text-lg font-black text-hospital-darkBlue">قائمة الانتظار النشطة</h2>
                 </div>
                 <span id="display-queue-count" class="text-xs font-bold text-hospital-blue bg-hospital-blue/10 border border-hospital-blue/20 px-3 py-1 rounded-full">0 مراجعين</span>
             </div>
 
-            <div id="display-queue-list" class="space-y-3 overflow-y-auto max-h-[350px] p-1 flex-grow">
+            <div id="display-queue-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1">
             </div>
 
-            <div id="display-empty-msg" class="text-center py-12 text-slate-400 font-bold text-sm">
+            <div id="display-empty-msg" class="text-center py-6 text-slate-400 font-bold text-sm hidden">
                 لا يوجد منتظرين حالياً
             </div>
         </div>
@@ -142,8 +148,19 @@
         <p>المملكة العربية السعودية - وزارة الصحة © نظام إدارة الطوابير الآلي</p>
     </footer>
 
-    <!-- Display Logic & Firebase -->
+    <!-- Display Logic & Fullscreen & Firebase -->
     <script>
+        // Fullscreen Toggle Function
+        window.toggleFullscreen = function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        };
+
         setInterval(() => {
             try {
                 const now = new Date();
@@ -202,13 +219,13 @@
                     } else {
                         if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
                         state.queue.forEach((patient) => {
-                            const item = document.createElement('div');
-                            item.className = "bg-hospital-sand border border-hospital-accent/30 rounded-2xl p-3 text-center shadow-xs flex items-center justify-between px-5";
-                            item.innerHTML = `
+                            const box = document.createElement('div');
+                            box.className = "bg-hospital-sand border border-hospital-accent/30 rounded-xl p-3 text-center shadow-xs flex items-center justify-between px-4";
+                            box.innerHTML = `
                                 <span class="text-xl font-black text-hospital-blue">${String(patient.id).padStart(3, '0')}</span>
                                 <span class="text-[10px] text-slate-500 font-bold">انتظار</span>
                             `;
-                            queueListEl.appendChild(item);
+                            queueListEl.appendChild(box);
                         });
                     }
                 }
