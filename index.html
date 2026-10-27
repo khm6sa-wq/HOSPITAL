@@ -106,11 +106,11 @@
     <!-- Main Controller Area -->
     <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow grid grid-cols-1 md:grid-cols-3 gap-8">
 
-        <!-- Left Column: Actions & Self-Service QR Code (1 Column) -->
+        <!-- Left Column: Actions & Fixed QR Code (1 Column) -->
         <div class="space-y-6 md:col-span-1">
             
-            <!-- Actions Card (Admin Only) -->
-            <div id="admin-actions-card" class="bg-white rounded-3xl p-6 border-2 border-slate-200/80 card-shadow space-y-4">
+            <!-- Actions Card -->
+            <div class="bg-white rounded-3xl p-6 border-2 border-slate-200/80 card-shadow space-y-4">
                 <h2 class="text-lg font-black text-hospital-darkBlue pb-2 border-b border-slate-100 flex items-center gap-2">
                     <i class="fa-solid fa-sliders text-hospital-accent"></i>
                     <span>إدارة الأدوار (الاستقبال)</span>
@@ -137,23 +137,23 @@
                 </button>
             </div>
 
-            <!-- Self-Service QR Code Card -->
-            <div id="qr-card-section" class="bg-white rounded-3xl p-6 border-2 border-hospital-accent/40 card-shadow space-y-3 text-center">
+            <!-- Fixed Static QR Code Card -->
+            <div class="bg-white rounded-3xl p-6 border-2 border-hospital-accent/40 card-shadow space-y-3 text-center">
                 <div class="text-xs font-bold text-slate-600 flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-qrcode text-hospital-accent text-sm"></i>
-                    <span>باركود حجز التذكرة الذاتي</span>
+                    <span>باركود شاشة العرض والانتظار</span>
                 </div>
                 
                 <div class="bg-hospital-sand border border-dashed border-hospital-accent rounded-2xl p-3 space-y-2 flex flex-col items-center">
-                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز للحجز ومتابعة دورك من هاتفك</div>
+                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز لمتابعة شاشة الدور مباشرة</div>
                     
-                    <!-- QR Container -->
+                    <!-- Fixed Static QR Container -->
                     <div class="bg-white p-2.5 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center">
-                        <div id="visitor-qrcode"></div>
+                        <div id="fixed-qrcode"></div>
                     </div>
 
-                    <a id="visitor-link-btn" href="#" target="_blank" class="text-[10px] text-hospital-blue font-bold underline hover:text-hospital-accent transition-colors">
-                        حجز تذكرة جديدة عبر الهاتف
+                    <a href="display.html" target="_blank" class="text-[10px] text-hospital-blue font-bold underline hover:text-hospital-accent transition-colors">
+                        فتح شاشة العرض مباشرة
                     </a>
                 </div>
             </div>
@@ -181,65 +181,36 @@
         <!-- Right Column: Current & Queue Overview (2 Columns) -->
         <div class="space-y-6 md:col-span-2">
             
-            <!-- Dynamic View Area: Admin Panel OR Visitor Ticket View -->
-            <div id="main-view-container">
-                <!-- Default Admin View -->
-                <div id="admin-view" class="space-y-6">
-                    <div class="bg-white rounded-3xl p-8 border-4 border-hospital-accent/50 card-shadow text-center space-y-4 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
-                        
-                        <div class="text-slate-500 font-bold text-lg">المراجع الحالي تحت الخدمة</div>
-                        
-                        <div id="ctrl-current-num" class="text-8xl sm:text-9xl font-black text-hospital-blue tracking-tighter py-4 bg-hospital-sand rounded-3xl border-2 border-hospital-accent/30 shadow-inner">
-                            ---
-                        </div>
-
-                        <div class="text-xs font-semibold text-slate-400">
-                            يتم إصدار التذاكر عبر الاستقبال أو مسح الباركود لحجز دور ذكي.
-                        </div>
-                    </div>
-
-                    <!-- Queue List Control Box -->
-                    <div class="bg-white rounded-3xl p-6 border-2 border-slate-200/80 card-shadow space-y-4">
-                        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                            <div class="flex items-center gap-3">
-                                <div class="w-4 h-4 rounded-full bg-hospital-accent"></div>
-                                <h2 class="text-lg font-black text-hospital-darkBlue">قائمة الانتظار النشطة</h2>
-                            </div>
-                            <span id="ctrl-queue-counter" class="text-xs font-bold text-hospital-blue bg-hospital-blue/10 border border-hospital-blue/20 px-3 py-1 rounded-full">0 مراجعين</span>
-                        </div>
-
-                        <div id="ctrl-queue-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-60 overflow-y-auto p-1">
-                        </div>
-
-                        <div id="ctrl-empty-msg" class="text-center py-6 text-slate-400 font-bold hidden">
-                            لا يوجد مراجعين في الانتظار حالياً
-                        </div>
-                    </div>
+            <!-- Current Serving Control Box -->
+            <div class="bg-white rounded-3xl p-8 border-4 border-hospital-accent/50 card-shadow text-center space-y-4 relative overflow-hidden">
+                <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
+                
+                <div class="text-slate-500 font-bold text-lg">المراجع الحالي تحت الخدمة</div>
+                
+                <div id="ctrl-current-num" class="text-8xl sm:text-9xl font-black text-hospital-blue tracking-tighter py-4 bg-hospital-sand rounded-3xl border-2 border-hospital-accent/30 shadow-inner">
+                    ---
                 </div>
 
-                <!-- Visitor Ticket View (Appears automatically when scanned via QR) -->
-                <div id="visitor-ticket-view" class="bg-white rounded-3xl p-8 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 hidden">
-                    <div class="text-slate-500 font-bold text-sm">بطاقة تذكرتك الرقمية الذكية</div>
-                    
-                    <div id="visitor-my-ticket" class="text-8xl sm:text-9xl font-black text-hospital-blue tracking-tighter py-4 bg-hospital-sand rounded-3xl border-2 border-hospital-accent/30 shadow-inner">
-                        001
-                    </div>
+                <div class="text-xs font-semibold text-slate-400">
+                    يتم إصدار التذاكر من مكتب الاستقبال، ومسح الباركود يفتح شاشة العرض للمراجعين.
+                </div>
+            </div>
 
-                    <div class="grid grid-cols-2 gap-4 pt-2">
-                        <div class="bg-hospital-sand p-4 rounded-2xl border border-hospital-accent/30">
-                            <div class="text-xs text-slate-500 font-bold">الرقم الحالي بالخدمة</div>
-                            <div id="visitor-current-num" class="text-3xl font-black text-hospital-blue mt-1">---</div>
-                        </div>
-                        <div class="bg-hospital-sand p-4 rounded-2xl border border-hospital-accent/30">
-                            <div class="text-xs text-slate-500 font-bold">المراجعين قبلك</div>
-                            <div id="visitor-ahead-count" class="text-3xl font-black text-hospital-accent mt-1">0</div>
-                        </div>
+            <!-- Queue List Control Box -->
+            <div class="bg-white rounded-3xl p-6 border-2 border-slate-200/80 card-shadow space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 rounded-full bg-hospital-accent"></div>
+                        <h2 class="text-lg font-black text-hospital-darkBlue">قائمة الانتظار النشطة</h2>
                     </div>
+                    <span id="ctrl-queue-counter" class="text-xs font-bold text-hospital-blue bg-hospital-blue/10 border border-hospital-blue/20 px-3 py-1 rounded-full">0 مراجعين</span>
+                </div>
 
-                    <div id="visitor-status-msg" class="bg-hospital-blue text-amber-200 p-4 rounded-2xl border border-hospital-accent/50 text-base font-black shadow-md">
-                        <i class="fa-solid fa-bell ml-2"></i> تم حجز تذكرتك بنجاح! تابع دورك من هنا.
-                    </div>
+                <div id="ctrl-queue-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-60 overflow-y-auto p-1">
+                </div>
+
+                <div id="ctrl-empty-msg" class="text-center py-6 text-slate-400 font-bold hidden">
+                    لا يوجد مراجعين في الانتظار حالياً
                 </div>
             </div>
 
@@ -252,7 +223,7 @@
         <p>لوحة التحكم بالعيادات - وزارة الصحة © المملكة العربية السعودية</p>
     </footer>
 
-    <!-- Integrated Controller & Visitor Logic -->
+    <!-- Controller Logic -->
     <script>
         setInterval(() => {
             try {
@@ -328,7 +299,7 @@
 
         window.callNextPatient = function() {
             if (state.queue.length === 0) {
-                alert('لا يوجد مراجعين في قائمة الانتظار حالياً');
+                alert('لا يوجد مراجعين في الانتظار حالياً');
                 return;
             }
             const nextPatient = state.queue.shift();
@@ -347,13 +318,11 @@
         window.resetQueueSystem = function() {
             if (confirm('هل أنت متأكد من تصفير النظام وإعادة ضبط الأعداد بالكامل؟')) {
                 state = { queue: [], current: null, nextId: 1 };
-                localStorage.removeItem('kfh_my_ticket');
                 saveAndSync(false);
             }
         };
 
-        let isVisitorMode = false;
-        let myTicketNum = null;
+        let qrInitialized = false;
 
         window.renderController = function() {
             try {
@@ -363,8 +332,7 @@
                 const emptyMsgEl = document.getElementById('ctrl-empty-msg');
                 const statWaitingEl = document.getElementById('stat-waiting');
                 const statNextIdEl = document.getElementById('stat-next-id');
-                const visitorQrContainer = document.getElementById('visitor-qrcode');
-                const visitorLinkBtn = document.getElementById('visitor-link-btn');
+                const fixedQrContainer = document.getElementById('fixed-qrcode');
 
                 const currentStr = (state && state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
                 if (currentNumEl) currentNumEl.textContent = currentStr;
@@ -372,26 +340,23 @@
                 if (statWaitingEl) statWaitingEl.textContent = state && state.queue ? state.queue.length : 0;
                 if (statNextIdEl) statNextIdEl.textContent = String(state && state.nextId ? state.nextId : 1).padStart(3, '0');
 
-                // QR Code points to index.html with autoBook parameter
-                if (visitorQrContainer) {
-                    visitorQrContainer.innerHTML = '';
+                // Render Fixed Static QR Code only once to ensure it never changes
+                if (fixedQrContainer && !qrInitialized) {
+                    fixedQrContainer.innerHTML = '';
                     try {
-                        const nextIdVal = state && state.nextId ? state.nextId : 1;
-                        const visitorUrl = `https://khm6sa-wq.github.io/HOSPITAL/index.html?autoBook=true&ticket=${nextIdVal}`;
-                        if (visitorLinkBtn) visitorLinkBtn.href = visitorUrl;
-
-                        new QRCode(visitorQrContainer, {
-                            text: visitorUrl,
+                        const displayUrl = "https://khm6sa-wq.github.io/HOSPITAL/display.html";
+                        new QRCode(fixedQrContainer, {
+                            text: displayUrl,
                             width: 95,
                             height: 95,
                             colorDark: "#0F3759",
                             colorLight: "#ffffff",
                             correctLevel: QRCode.CorrectLevel.H
                         });
+                        qrInitialized = true;
                     } catch (err) {}
                 }
 
-                // Render Queue list for Admin
                 if (queueListEl) {
                     queueListEl.innerHTML = '';
                     if (!state || !state.queue || state.queue.length === 0) {
@@ -409,75 +374,10 @@
                         });
                     }
                 }
-
-                // If Visitor Mode is Active, update visitor ticket interface
-                if (isVisitorMode && myTicketNum) {
-                    const visitorMyTicketEl = document.getElementById('visitor-my-ticket');
-                    const visitorCurrentEl = document.getElementById('visitor-current-num');
-                    const visitorAheadEl = document.getElementById('visitor-ahead-count');
-                    const visitorStatusEl = document.getElementById('visitor-status-msg');
-
-                    if (visitorMyTicketEl) visitorMyTicketEl.textContent = String(myTicketNum).padStart(3, '0');
-                    if (visitorCurrentEl) visitorCurrentEl.textContent = currentStr;
-
-                    let aheadCount = 0;
-                    if (state && state.queue) {
-                        const index = state.queue.findIndex(p => String(p.id) === String(myTicketNum));
-                        if (index !== -1) {
-                            aheadCount = index;
-                        } else if (state.current && Number(myTicketNum) < Number(state.current.id)) {
-                            aheadCount = -1; // Served
-                        } else {
-                            aheadCount = state.queue.length;
-                        }
-                    }
-                    if (visitorAheadEl) visitorAheadEl.textContent = aheadCount >= 0 ? aheadCount : 0;
-
-                    if (state.current && String(state.current.id) === String(myTicketNum)) {
-                        if (visitorStatusEl) visitorStatusEl.innerHTML = '<i class="fa-solid fa-bell ml-2"></i> دورك الآن! الرجاء التوجه للعيادة فوراً';
-                    } else if (aheadCount === 0) {
-                        if (visitorStatusEl) visitorStatusEl.textContent = 'أنت التالي في الدور! استعد.';
-                    } else if (aheadCount < 0) {
-                        if (visitorStatusEl) visitorStatusEl.textContent = 'تمت خدمة تذكرتك مسبقاً. نتمنى لك السلامة.';
-                    } else {
-                        if (visitorStatusEl) visitorStatusEl.textContent = `يوجد ${aheadCount} مراجعين قبلك في الانتظار.`;
-                    }
-                }
             } catch (e) {}
         }
 
         window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('autoBook') === 'true') {
-                const ticketParam = urlParams.get('ticket');
-                if (ticketParam) {
-                    isVisitorMode = true;
-                    myTicketNum = ticketParam;
-                    
-                    // Hide admin panels for visitors
-                    const adminActions = document.getElementById('admin-actions-card');
-                    const qrCard = document.getElementById('qr-card-section');
-                    const adminView = document.getElementById('admin-view');
-                    const visitorView = document.getElementById('visitor-ticket-view');
-
-                    if (adminActions) adminActions.style.display = 'none';
-                    if (qrCard) qrCard.style.display = 'none';
-                    if (adminView) adminView.classList.add('hidden');
-                    if (visitorView) visitorView.classList.remove('hidden');
-
-                    // If not booked yet in queue, automatically add it safely via sync
-                    setTimeout(() => {
-                        if (state && (!state.queue.some(p => String(p.id) === String(myTicketNum)) && (!state.current || String(state.current.id) !== String(myTicketNum)))) {
-                            const newPatient = { id: Number(myTicketNum), time: Date.now() };
-                            state.queue.push(newPatient);
-                            if (Number(myTicketNum) >= state.nextId) {
-                                state.nextId = Number(myTicketNum) + 1;
-                            }
-                            saveAndSync(false);
-                        }
-                    }, 500);
-                }
-            }
             renderController();
         });
     </script>
@@ -505,4 +405,18 @@
             signInAnonymously(auth).catch(() => {});
 
             window.docRefInstance = doc(window.dbInstance, "queues", "hospital_main_queue");
-            onSnapshot(window.docRef
+            onSnapshot(window.docRefInstance, (docSnap) => {
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if (cloudData && cloudData.state) {
+                        window.state = cloudData.state;
+                        if (typeof window.renderController === 'function') {
+                            window.renderController();
+                        }
+                    }
+                }
+            }, () => {});
+        } catch (e) {}
+    </script>
+</body>
+</html>
