@@ -196,7 +196,7 @@
                 const seconds = String(now.getSeconds()).padStart(2, '0');
                 const ampm = hours >= 12 ? 'م' : 'ص';
                 hours = hours % 12;
-                hours = hours ? hours : 12; // the hour '0' should be '12'
+                hours = hours ? hours : 12;
                 const formattedHours = String(hours).padStart(2, '0');
                 clockEl.textContent = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
             }
@@ -243,10 +243,10 @@
 
                         if (state.current && state.current.id !== lastAnnouncedId) {
                             lastAnnouncedId = state.current.id;
-                            playChimeAndSpeak(state.current.id);
+                            playChimeOnly();
                             flashLoungeDisplay();
                         } else if (shouldAnnounce && state.current && state.current.id === lastAnnouncedId) {
-                            playChimeAndSpeak(state.current.id);
+                            playChimeOnly();
                             flashLoungeDisplay();
                         }
 
@@ -265,7 +265,7 @@
 
                     if (state.current && (state.current.id !== lastAnnouncedId || shouldAnnounce)) {
                         lastAnnouncedId = state.current.id;
-                        playChimeAndSpeak(state.current.id);
+                        playChimeOnly();
                         flashLoungeDisplay();
                     }
 
@@ -274,7 +274,8 @@
             };
         }
 
-        function playChimeAndSpeak(ticketNumber) {
+        // Play Chime Tone Only (No Speech)
+        function playChimeOnly() {
             try {
                 if (!audioCtx) {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -298,17 +299,6 @@
                     osc.start(audioCtx.currentTime + (idx * 0.15));
                     osc.stop(audioCtx.currentTime + (idx * 0.15) + 0.8);
                 });
-
-                setTimeout(() => {
-                    if ('speechSynthesis' in window) {
-                        const formattedNum = String(ticketNumber);
-                        const text = `الرقم ${formattedNum}، الرجاء التوجه إلى الاستقبال`;
-                        const utterance = new SpeechSynthesisUtterance(text);
-                        utterance.lang = 'ar-SA';
-                        utterance.rate = 0.9;
-                        window.speechSynthesis.speak(utterance);
-                    }
-                }, 1000);
             } catch (e) {}
         }
 
