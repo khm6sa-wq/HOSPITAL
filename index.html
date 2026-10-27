@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم بالعيادة - مستشفى الملك فيصل</title>
+    <title>لوحة تحكم العيادة - مستشفى الملك فيصل</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -61,7 +61,7 @@
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-2.5 text-hospital-accent">
                 <i class="fa-solid fa-hospital text-sm"></i>
-                <span class="tracking-wide">المملكة العربية السعودية - وزارة الصحة | لوحة التحكم بالنظام</span>
+                <span class="tracking-wide">المملكة العربية السعودية - وزارة الصحة | لوحة النظام</span>
             </div>
             <div class="flex items-center gap-2 font-black text-hospital-accent bg-hospital-accent/10 px-3 py-0.5 rounded-full border border-hospital-accent/30">
                 <i class="fa-solid fa-gem text-[11px]"></i>
@@ -74,17 +74,18 @@
     <header class="bg-hospital-blue text-white border-b-4 border-hospital-accent shadow-2xl py-4 px-8 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             
+            <!-- الشعار بدون كلمة التحكم -->
             <div class="flex items-center space-x-5 space-x-reverse">
                 <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-hospital-accent shadow-2xl royal-glow shrink-0 flex items-center justify-center overflow-hidden bg-white">
                     <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-full h-full object-cover scale-[1.55]">
                 </div>
 
                 <div class="flex flex-col justify-center">
-                    <h1 class="text-2xl sm:text-3xl font-bold font-amiri tracking-tight text-white drop-shadow-md">
-                        مُسْتَشْفَى المَلِك فَيْصَل - التحكم
+                    <h1 class="text-3xl sm:text-4xl font-bold font-amiri tracking-tight text-white drop-shadow-md">
+                        مُسْتَشْفَى المَلِك فَيْصَل
                     </h1>
-                    <span class="text-xs sm:text-sm font-semibold tracking-wider text-amber-200 mt-0.5">
-                        Reception Controller Desk
+                    <span class="text-sm sm:text-base font-semibold tracking-wider text-amber-200 mt-1">
+                        King Faisal Hospital
                     </span>
                 </div>
             </div>
@@ -95,9 +96,9 @@
                     <span>فتح شاشة العرض</span>
                 </a>
 
-                <div class="text-left bg-hospital-darkBlue px-6 py-2.5 rounded-2xl border border-hospital-accent/40 min-w-[150px] shadow-inner">
-                    <div id="live-clock" class="text-xl font-black text-hospital-accent tracking-widest text-center">00:00:00 ص</div>
-                    <div id="live-date" class="text-[9px] text-amber-200 font-bold mt-0.5 text-center">--/--/----</div>
+                <div class="text-left bg-hospital-darkBlue px-6 py-2.5 rounded-2xl border border-hospital-accent/40 min-w-[160px] shadow-inner">
+                    <div id="live-clock" class="text-xl sm:text-2xl font-black text-hospital-accent tracking-widest text-center">00:00:00 ص</div>
+                    <div id="live-date" class="text-[10px] text-amber-200 font-bold mt-0.5 text-center">--/--/----</div>
                 </div>
             </div>
         </div>
@@ -217,25 +218,204 @@
 
     <!-- Footer Banner -->
     <footer class="bg-hospital-darkBlue text-amber-200 py-4 border-t border-hospital-accent/30 text-center text-sm font-bold shadow-lg">
-        <p>لوحة تحكم العيادات - وزارة الصحة © المملكة العربية السعودية</p>
+        <p>لوحة التحكم بالعيادات - وزارة الصحة © المملكة العربية السعودية</p>
     </footer>
 
-    <!-- Controller Logic & Firebase Sync Engine -->
+    <!-- Independent Controller Core Script -->
+    <script>
+        // Live Clock (12-Hour format with AM/PM) - Guaranteed Execution
+        setInterval(() => {
+            try {
+                const now = new Date();
+                const clockEl = document.getElementById('live-clock');
+                const dateEl = document.getElementById('live-date');
+                
+                if(clockEl) {
+                    let hours = now.getHours();
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    const ampm = hours >= 12 ? 'م' : 'ص';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12;
+                    const formattedHours = String(hours).padStart(2, '0');
+                    clockEl.textContent = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
+                }
+
+                if(dateEl) {
+                    dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                }
+            } catch (e) {}
+        }, 1000);
+
+        let state = {
+            queue: [],
+            current: null,
+            nextId: 1
+        };
+
+        try {
+            const localSaved = localStorage.getItem('kfh_queue_state');
+            if (localSaved) {
+                const parsed = JSON.parse(localSaved);
+                if (parsed && parsed.state) {
+                    state = parsed.state;
+                }
+            }
+        } catch (e) {}
+
+        const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync') : null;
+        if (queueChannel) {
+            queueChannel.onmessage = (event) => {
+                if (event.data && event.data.state) {
+                    state = event.data.state;
+                    renderController();
+                }
+            };
+        }
+
+        window.saveAndSync = function(shouldAnnounce = false) {
+            try {
+                localStorage.setItem('kfh_queue_state', JSON.stringify({ state }));
+            } catch (e) {}
+
+            if (queueChannel) {
+                queueChannel.postMessage({ state, shouldAnnounce, timestamp: Date.now() });
+            }
+
+            if (window.dbInstance && window.docRefInstance) {
+                import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js").then(({ setDoc }) => {
+                    setDoc(window.docRefInstance, { state, shouldAnnounce, timestamp: Date.now() }).catch(() => {});
+                });
+            }
+
+            renderController();
+        }
+
+        window.addNewPatient = function() {
+            const newPatient = { id: state.nextId, time: Date.now() };
+            state.queue.push(newPatient);
+            state.nextId++;
+            saveAndSync(false);
+        };
+
+        window.callNextPatient = function() {
+            if (state.queue.length === 0) {
+                alert('لا يوجد مراجعين في قائمة الانتظار حالياً');
+                return;
+            }
+            const nextPatient = state.queue.shift();
+            state.current = nextPatient;
+            saveAndSync(true);
+        };
+
+        window.recallCurrentPatient = function() {
+            if (!state.current) {
+                alert('لا يوجد مراجع حالي لإعادة ندائه');
+                return;
+            }
+            saveAndSync(true);
+        };
+
+        window.resetQueueSystem = function() {
+            if (confirm('هل أنت متأكد من تصفير النظام وإعادة ضبط الأعداد بالكامل؟')) {
+                state = { queue: [], current: null, nextId: 1 };
+                saveAndSync(false);
+            }
+        };
+
+        window.renderController = function() {
+            try {
+                const currentNumEl = document.getElementById('ctrl-current-num');
+                const queueListEl = document.getElementById('ctrl-queue-list');
+                const queueCounterEl = document.getElementById('ctrl-queue-counter');
+                const emptyMsgEl = document.getElementById('ctrl-empty-msg');
+                const statWaitingEl = document.getElementById('stat-waiting');
+                const statNextIdEl = document.getElementById('stat-next-id');
+                const ticketNumPreview = document.getElementById('ticket-number-preview');
+                const qrContainer = document.getElementById('qrcode-container');
+
+                const currentStr = (state && state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
+                if (currentNumEl) currentNumEl.textContent = currentStr;
+                if (queueCounterEl) queueCounterEl.textContent = `${state && state.queue ? state.queue.length : 0} مراجعين`;
+                if (statWaitingEl) statWaitingEl.textContent = state && state.queue ? state.queue.length : 0;
+                if (statNextIdEl) statNextIdEl.textContent = String(state && state.nextId ? state.nextId : 1).padStart(3, '0');
+
+                const previewIdStr = String(state && state.nextId ? state.nextId : 1).padStart(3, '0');
+                if (ticketNumPreview) ticketNumPreview.textContent = previewIdStr;
+
+                if (qrContainer) {
+                    qrContainer.innerHTML = '';
+                    try {
+                        const qrText = `https://king-faisal-hospital-queue.local/ticket?no=${previewIdStr}`;
+                        new QRCode(qrContainer, {
+                            text: qrText,
+                            width: 90,
+                            height: 90,
+                            colorDark: "#0F3759",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    } catch (e) {}
+                }
+
+                if (queueListEl) {
+                    queueListEl.innerHTML = '';
+                    if (!state || !state.queue || state.queue.length === 0) {
+                        if (emptyMsgEl) emptyMsgEl.classList.remove('hidden');
+                    } else {
+                        if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
+                        state.queue.forEach((patient) => {
+                            const box = document.createElement('div');
+                            box.className = "bg-hospital-sand border border-hospital-accent/30 rounded-xl p-3 text-center shadow-xs flex items-center justify-between px-4";
+                            box.innerHTML = `
+                                <span class="text-xl font-black text-hospital-blue">${String(patient.id).padStart(3, '0')}</span>
+                                <span class="text-[10px] text-slate-400 font-bold">انتظار</span>
+                            `;
+                            queueListEl.appendChild(box);
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+
+        renderController();
+    </script>
+
+    <!-- Safe Firebase Sync Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Live Clock (12-Hour format with AM/PM)
-        setInterval(() => {
-            const now = new Date();
-            const clockEl = document.getElementById('live-clock');
-            const dateEl = document.getElementById('live-date');
-            
-            if(clockEl) {
-                let hours = now.getHours();
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                const ampm = hours >= 12 ? 'م' : 'ص';
-                hours = hours % 12;
-                hours = hours ? hours :
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
+            authDomain: "hospital-ba989.firebaseapp.com",
+            projectId: "hospital-ba989",
+            storageBucket: "hospital-ba989.firebasestorage.app",
+            messagingSenderId: "30608387919",
+            appId: "1:30608387919:web:ee0f83efabc514e5ff1f3a",
+            measurementId: "G-6R34PWFVWK"
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            window.dbInstance = getFirestore(app);
+            const auth = getAuth(app);
+            signInAnonymously(auth).catch(() => {});
+
+            window.docRefInstance = doc(window.dbInstance, "queues", "hospital_main_queue");
+            onSnapshot(window.docRefInstance, (docSnap) => {
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if (cloudData && cloudData.state) {
+                        window.state = cloudData.state;
+                        if (typeof window.renderController === 'function') {
+                            window.renderController();
+                        }
+                    }
+                }
+            }, () => {});
+        } catch (e) {}
+    </script>
+</body>
+</html>
