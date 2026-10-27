@@ -48,7 +48,7 @@
             box-shadow: 0 20px 40px -10px rgba(15, 55, 89, 0.12);
         }
         .royal-glow {
-            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+            filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.4));
         }
         .call-flash {
             animation: flashGold 1s ease-in-out 3;
@@ -79,9 +79,9 @@
     <header class="bg-hospital-blue text-white border-b-4 border-hospital-accent shadow-2xl py-4 px-8 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             
-            <!-- الشعار يملأ المساحة بالكامل وبشكل واضح -->
+            <!-- الشعار بدون أي فراغات بيضاء وبدمج متناسق -->
             <div class="flex items-center space-x-5 space-x-reverse">
-                <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-hospital-accent shadow-2xl royal-glow shrink-0">
+                <img src="logo.png" alt="شعار مستشفى الملك فيصل" class="w-24 h-24 sm:w-28 sm:h-28 object-contain mix-blend-multiply royal-glow shrink-0">
 
                 <div class="flex flex-col justify-center">
                     <h1 class="text-3xl sm:text-4xl font-bold font-amiri tracking-tight text-white drop-shadow-md">
@@ -159,76 +159,4 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        let audioCtx = null;
-
-        window.initAudioContext = function() {
-            try {
-                if (!audioCtx) {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    audioCtx = new AudioContext();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-            } catch (e) {}
-        };
-
-        window.toggleFullScreen = function() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen().catch(() => {});
-                }
-            }
-        };
-
-        let state = {
-            queue: [],
-            current: null
-        };
-
-        let lastAnnouncedId = null;
-
-        // Live Clock (12-Hour format with AM/PM)
-        setInterval(() => {
-            const now = new Date();
-            const clockEl = document.getElementById('live-clock');
-            const dateEl = document.getElementById('live-date');
-            
-            if(clockEl) {
-                let hours = now.getHours();
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                const ampm = hours >= 12 ? 'م' : 'ص';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                const formattedHours = String(hours).padStart(2, '0');
-                clockEl.textContent = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
-            }
-
-            if(dateEl) {
-                dateEl.textContent = now.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            }
-        }, 1000);
-
-        try {
-            const localSaved = localStorage.getItem('kfh_queue_state');
-            if (localSaved) {
-                const parsed = JSON.parse(localSaved);
-                if (parsed && parsed.state) {
-                    state = parsed.state;
-                    if(state.current) lastAnnouncedId = state.current.id;
-                }
-            }
-        } catch (e) {}
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
-            authDomain: "hospital-ba989.firebaseapp.com",
-            projectId: "hospital-ba989",
-            storageBucket: "hospital-ba989.firebasestorage.app",
-            messagingSenderId: "30608387919",
-            appId: "1:30608387919:web:ee0f83efabc514e5ff
+        import { getFirestore, doc, onSnapshot } from "
