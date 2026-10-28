@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة حجز التذاكر الذكية - مستشفى الملك فيصل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { hospital: { blue: '#0F3759', darkBlue: '#0A253D', lightBlue: '#1E4D7B', accent: '#D4AF37', sand: '#F7F9FC' } },
+                    fontFamily: { amiri: ['Amiri', 'serif'], tajawal: ['Tajawal', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background-color: #F4F7FB; }
+        .pattern-bg { background-image: radial-gradient(#1E4D7B 0.6px, transparent 0.6px), radial-gradient(#D4AF37 0.6px, #F4F7FB 0.6px); background-size: 30px 30px; }
+        .card-shadow { box-shadow: 0 20px 40px -10px rgba(15, 55, 89, 0.12); }
+    </style>
+</head>
+<body class="pattern-bg text-slate-800 min-h-screen flex flex-col justify-between">
+    <div class="bg-hospital-darkBlue py-2 px-6 text-xs font-bold text-amber-200 border-b border-hospital-accent/30 shadow-md">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2.5 text-hospital-accent"><i class="fa-solid fa-hospital"></i><span>خدمة حجز التذاكر الذكية - مستشفى الملك فيصل</span></div>
+        </div>
+    </div>
+
+    <main class="max-w-xl w-full mx-auto px-6 py-12 flex-grow flex flex-col justify-center">
+        <div class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-hospital-accent/50 card-shadow text-center space-y-6 relative">
+            <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-hospital-blue via-hospital-accent to-hospital-blue"></div>
+            
+            <div class="text-hospital-darkBlue font-black text-2xl flex items-center justify-center gap-2">
+                <i class="fa-solid fa-ticket text-hospital-accent"></i>
+                <span>رقم تذكرتك الذكية</span>
+            </div>
+            
+            <div id="my-ticket-num" class="text-8xl sm:text-9xl font-black text-hospital-blue tracking-tighter py-4 bg-hospital-sand rounded-3xl border-2 border-hospital-accent/30 shadow-inner">
+                ---
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-hospital-sand p-4 rounded-2xl border border-hospital-accent/30">
+                    <div class="text-xs text-slate-500 font-bold">الرقم الحالي بالخدمة</div>
+                    <div id="ticket-current" class="text-4xl font-black text-hospital-blue mt-1">---</div>
+                </div>
+                <div class="bg-hospital-sand p-4 rounded-2xl border border-hospital-accent/30">
+                    <div class="text-xs text-slate-500 font-bold">المراجعين قبلك</div>
+                    <div id="ticket-ahead" class="text-4xl font-black text-hospital-accent mt-1">0</div>
+                </div>
+            </div>
+
+            <div id="status-box" class="bg-hospital-blue text-amber-200 p-4 rounded-2xl text-xs sm:text-sm font-black shadow-md">
+                جاري حجز تذكرتك وتزامنها مع النظام...
+            </div>
+
+            <button onclick="requestNewTicket()" class="text-xs font-bold text-hospital-blue underline hover:text-hospital-accent transition-colors cursor-pointer mt-4">
+                <i class="fa-solid fa-rotate-right ml-1"></i> طلب تذكرة جديدة
+            </button>
+        </div>
+    </main>
+
+    <footer class="bg-hospital-darkBlue text-amber-200 py-4 text-center text-sm font-bold">
+        <p>المملكة العربية السعودية - وزارة الصحة © نظام إدارة الطوابير</p>
+    </footer>
+
+    <script>
+        let currentCloudState = { queue: [], current: null, nextId: 1 };
+        let myTicketId = localStorage.getItem('kfh_my_ticket');
+
+        window.renderTicketUI = function(state) {
+            if (!state) return;
+            currentCloudState = state;
+
+            const myTicketEl = document.getElementById('my-ticket-num');
+            const currentEl = document.getElementById('ticket-current');
+            const aheadEl = document.getElementById('ticket-ahead');
+            const statusBox = document.getElementById('status-box');
+
+            if (myTicketEl) myTicketEl.textContent = myTicketId ? String(myTicketId).padStart(3, '0') : '---';
+            if (currentEl) currentEl.textContent = (state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
+
+            let aheadCount = 0;
+            if (state.queue && myTicketId) {
+                const index = state.queue.findIndex(p => String(p.id) === String(myTicketId));
+                if (index !== -1) aheadCount = index;
+                else if (state.current && Number(myTicketId) === Number(state.current.id)) aheadCount = 0;
+                else if (state.current && Number(myTicketId) < Number(state.current.id)) aheadCount = -1;
+                else aheadCount = state.queue.length;
+            }
+            if (aheadEl) aheadEl.textContent = aheadCount >= 0 ? aheadCount : 0;
+
+            if (state.current && String(state.current.id) === String(myTicketId)) {
+                if (statusBox) statusBox.innerHTML = '<i class="fa-solid fa-bell ml-2 animate-bounce"></i> دورك الآن! يرجى التوجه إلى العيادة فوراً';
+            } else if (aheadCount === 0 && myTicketId) {
+                if (statusBox) statusBox.textContent = 'أنت التالي في الدور! استعد للخدمة قريباً.';
+            } else if (aheadCount < 0) {
+                if (statusBox) statusBox.textContent = 'تمت خدمة تذكرتك مسبقاً. نتمنى لك دوام الصحة والعافية.';
+            } else {
+                if (statusBox) statusBox.textContent = `تم حجز تذكرتك بنجاح. يوجد ${aheadCount} مراجعين قبلك في الانتظار.`;
+            }
+        };
+
+        window.requestNewTicket = function() {
+            localStorage.removeItem('kfh_my_ticket');
+            myTicketId = null;
+            location.reload();
+        };
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, runTransaction, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
+            authDomain: "hospital-ba989.firebaseapp.com",
+            projectId: "hospital-ba989",
+            storageBucket: "hospital-ba989.firebasestorage.app",
+            messagingSenderId: "30608387919",
+            appId: "1:30608387919:web:ee0f83efabc514e5ff1f3a",
+            measurementId: "G-6R34PWFVWK"
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            signInAnonymously(auth).catch(() => {});
+            const mainDocRef = doc(db, "queues", "hospital_main_queue");
+
+            async function bookAutomatically() {
+                if (myTicketId) return;
+                try {
+                    await runTransaction(db, async (transaction) => {
+                        const docSnap = await transaction.get(mainDocRef);
+                        let state = { queue: [], current: null, nextId: 1 };
+                        if (docSnap.exists() && docSnap.data().state) state = docSnap.data().state;
+
+                        let newTicketNum = Number(state.nextId || 1);
+                        if (!state.queue) state.queue = [];
+                        state.queue.push({ id: newTicketNum, time: Date.now() });
+                        state.nextId = newTicketNum + 1;
+
+                        myTicketId = newTicketNum;
+                        localStorage.setItem('kfh_my_ticket', newTicketNum);
+
+                        transaction.set(mainDocRef, { state, shouldAnnounce: false, timestamp: Date.now() });
+                    });
+                } catch (e) {}
+            }
+
+            onSnapshot(mainDocRef, async (docSnap) => {
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if (cloudData && cloudData.state) {
+                        currentCloudState = cloudData.state;
+                        if (!myTicketId) {
+                            await bookAutomatically();
+                        }
+                        renderTicketUI(currentCloudState);
+                    }
+                }
+            });
+        } catch (e) {}
+    </script>
+</body>
+</html>
