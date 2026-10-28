@@ -90,7 +90,7 @@
             <div class="flex items-center gap-4">
                 <a href="display.html" target="_blank" class="bg-hospital-accent hover:bg-amber-400 text-hospital-darkBlue px-4.5 py-3 rounded-2xl text-xs font-black shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 cursor-pointer border border-white/30">
                     <i class="fa-solid fa-tv text-base"></i>
-                    <span>فتح شاشة العرض</span>
+                    <span>فتح شاشة العرض العامة</span>
                 </a>
 
                 <div class="text-left bg-hospital-darkBlue px-6 py-2.5 rounded-2xl border border-hospital-accent/40 min-w-[160px] shadow-inner">
@@ -135,22 +135,23 @@
                 </button>
             </div>
 
-            <!-- Static QR Code Card -->
+            <!-- Static QR Code Card (Linked to ticket.html) -->
             <div class="bg-white rounded-3xl p-6 border-2 border-hospital-accent/40 card-shadow space-y-3 text-center">
                 <div class="text-xs font-bold text-slate-600 flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-qrcode text-hospital-accent text-sm"></i>
-                    <span>باركود حجز ومتابعة الدور للمراجعين</span>
+                    <span>باركود حجز التذاكر للمراجعين</span>
                 </div>
                 
                 <div class="bg-hospital-sand border border-dashed border-hospital-accent rounded-2xl p-3 space-y-2 flex flex-col items-center">
-                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز لحجز رقمك ومتابعة دورك</div>
+                    <div class="text-[11px] font-bold text-hospital-darkBlue">امسح الرمز للحصول على تذكرة ذكية</div>
                     
                     <div class="bg-white p-2 rounded-xl border border-hospital-accent/40 shadow-sm flex items-center justify-center">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=https://khm6sa-wq.github.io/HOSPITAL/display.html" alt="Visitor QR Code" class="w-[110px] h-[110px] object-contain">
+                        <!-- تم تعديل الرابط هنا ليوجه إلى ticket.html -->
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=https://khm6sa-wq.github.io/HOSPITAL/ticket.html" alt="Visitor Ticket QR Code" class="w-[110px] h-[110px] object-contain">
                     </div>
 
-                    <a href="display.html" target="_blank" class="text-[10px] text-hospital-blue font-bold underline hover:text-hospital-accent transition-colors">
-                        فتح بوابة المراجعين مباشرة
+                    <a href="ticket.html" target="_blank" class="text-[10px] text-hospital-blue font-bold underline hover:text-hospital-accent transition-colors">
+                        تجربة فتح صفحة التذكرة
                     </a>
                 </div>
             </div>
@@ -218,7 +219,7 @@
         <p>لوحة التحكم بالعيادات - وزارة الصحة © المملكة العربية السعودية</p>
     </footer>
 
-    <!-- Controller Script with Instant Bridge Sync -->
+    <!-- Controller Script -->
     <script>
         setInterval(() => {
             try {
@@ -257,9 +258,7 @@
             }
         } catch (e) {}
 
-        // Instant Broadcast Channel for immediate local tab/device sync
         const queueChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kfh_queue_sync_bus') : null;
-        
         if (queueChannel) {
             queueChannel.onmessage = (event) => {
                 if (event.data && event.data.state) {
