@@ -54,12 +54,20 @@
                 </div>
             </div>
 
+            <!-- زر تأكيد الحجز (يظهر فقط إذا لم يكن قد حجز مسبقاً) -->
+            <div id="booking-action-area">
+                <button onclick="confirmBooking()" class="w-full bg-hospital-blue hover:bg-hospital-lightBlue text-white font-black py-4 px-6 rounded-2xl shadow-lg transition-all text-lg cursor-pointer border border-hospital-accent/40 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-circle-check text-hospital-accent text-xl"></i>
+                    <span>تأكيد حجز الرقم 🎟️</span>
+                </button>
+            </div>
+
             <div id="status-box" class="bg-hospital-blue text-amber-200 p-4 rounded-2xl text-xs sm:text-sm font-black shadow-md">
-                جاري حجز تذكرتك وتزامنها مع النظام...
+                يرجى الضغط على زر "تأكيد حجز الرقم" للحصول على دورك في النظام.
             </div>
 
             <button onclick="requestNewTicket()" class="text-xs font-bold text-hospital-blue underline hover:text-hospital-accent transition-colors cursor-pointer mt-4">
-                <i class="fa-solid fa-rotate-right ml-1"></i> طلب تذكرة جديدة
+                <i class="fa-solid fa-rotate-right ml-1"></i> طلب تذكرة جديدة / إعادة تعيين
             </button>
         </div>
     </main>
@@ -80,8 +88,16 @@
             const currentEl = document.getElementById('ticket-current');
             const aheadEl = document.getElementById('ticket-ahead');
             const statusBox = document.getElementById('status-box');
+            const bookingArea = document.getElementById('booking-action-area');
 
-            if (myTicketEl) myTicketEl.textContent = myTicketId ? String(myTicketId).padStart(3, '0') : '---';
+            if (myTicketId) {
+                if (bookingArea) bookingArea.style.display = 'none';
+                if (myTicketEl) myTicketEl.textContent = String(myTicketId).padStart(3, '0');
+            } else {
+                if (bookingArea) bookingArea.style.display = 'block';
+                if (myTicketEl) myTicketEl.textContent = '---';
+            }
+
             if (currentEl) currentEl.textContent = (state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
 
             let aheadCount = 0;
@@ -93,6 +109,11 @@
                 else aheadCount = state.queue.length;
             }
             if (aheadEl) aheadEl.textContent = aheadCount >= 0 ? aheadCount : 0;
+
+            if (!myTicketId) {
+                if (statusBox) statusBox.textContent = 'يرجى الضغط على زر "تأكيد حجز الرقم" للحصول على دورك في النظام.';
+                return;
+            }
 
             if (state.current && String(state.current.id) === String(myTicketId)) {
                 if (statusBox) statusBox.innerHTML = '<i class="fa-solid fa-bell ml-2 animate-bounce"></i> دورك الآن! يرجى التوجه إلى العيادة فوراً';
@@ -127,14 +148,17 @@
             measurementId: "G-6R34PWFVWK"
         };
 
+        let db, mainDocRef;
+
         try {
             const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
+            db = getFirestore(app);
             const auth = getAuth(app);
             signInAnonymously(auth).catch(() => {});
-            const mainDocRef = doc(db, "queues", "hospital_main_queue");
+            mainDocRef = doc(db, "queues", "hospital_main_queue");
 
-            async function bookAutomatically() {
+            // دالة تنفيذ الحجز الفعلي عند ضغط الزر حصراً
+            window.confirmBooking = async function() {
                 if (myTicketId) return;
                 try {
                     await runTransaction(db, async (transaction) => {
@@ -152,17 +176,17 @@
 
                         transaction.set(mainDocRef, { state, shouldAnnounce: false, timestamp: Date.now() });
                     });
-                } catch (e) {}
-            }
+                    renderTicketUI(currentCloudState);
+                } catch (e) {
+                    alert('حدث خطأ أثناء الاتصال بالنظام، يجربة المحاولة مرة أخرى.');
+                }
+            };
 
-            onSnapshot(mainDocRef, async (docSnap) => {
+            onSnapshot(mainDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
                         currentCloudState = cloudData.state;
-                        if (!myTicketId) {
-                            await bookAutomatically();
-                        }
                         renderTicketUI(currentCloudState);
                     }
                 }
