@@ -35,7 +35,6 @@
     <style>
         body { 
             font-family: 'Tajawal', sans-serif; 
-            /* الثيم الزجاجي الأبيض */
             background: linear-gradient(135deg, #F8FAFC 0%, #E0F2FE 100%);
             color: #1E293B;
             overflow-x: hidden;
@@ -161,7 +160,6 @@
             if (!state) return;
             currentCloudState = state;
 
-            // التحقق التلقائي: إذا كانت التذكرة المحفوظة قديمة وليست موجودة حالياً في الطابور أو الخدمة، يتم حذفها تلقائياً
             if (myTicketId) {
                 const foundInQueue = state.queue && state.queue.some(p => String(p.id) === String(myTicketId));
                 const isCurrent = state.current && String(state.current.id) === String(myTicketId);
@@ -258,6 +256,7 @@
                 }
 
                 try {
+                    let updatedState = null;
                     await runTransaction(db, async (transaction) => {
                         const docSnap = await transaction.get(mainDocRef);
                         let state = { queue: [], current: null, nextId: 1 };
@@ -266,16 +265,20 @@
                         let newTicketNum = Number(state.nextId || 1);
                         if (!state.queue) state.queue = [];
                         
-                        // حفظ الاسم ورقم التذكرة والوقت
                         state.queue.push({ id: newTicketNum, name: patientName, time: Date.now() });
                         state.nextId = newTicketNum + 1;
 
                         myTicketId = newTicketNum;
                         localStorage.setItem('kfh_my_ticket', newTicketNum);
+                        updatedState = state;
 
                         transaction.set(mainDocRef, { state, shouldAnnounce: false, timestamp: Date.now() });
                     });
-                    renderTicketUI(currentCloudState);
+                    
+                    // تحديث الواجهة فوراً بعد نجاح الحجز دون انتظار استجابة السيرفر البطيئة
+                    if (updatedState) {
+                        window.renderTicketUI(updatedState);
+                    }
                 } catch (e) {
                     alert('حدث خطأ أثناء الاتصال بالنظام، يرجى المحاولة مرة أخرى.');
                 }
@@ -286,7 +289,7 @@
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
                         currentCloudState = cloudData.state;
-                        renderTicketUI(currentCloudState);
+                        window.renderTicketUI(currentCloudState);
                     }
                 }
             });
