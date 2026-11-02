@@ -161,6 +161,17 @@
             if (!state) return;
             currentCloudState = state;
 
+            // التحقق التلقائي: إذا كانت التذكرة المحفوظة قديمة وليست موجودة حالياً في الطابور أو الخدمة، يتم حذفها تلقائياً
+            if (myTicketId) {
+                const foundInQueue = state.queue && state.queue.some(p => String(p.id) === String(myTicketId));
+                const isCurrent = state.current && String(state.current.id) === String(myTicketId);
+                
+                if (!foundInQueue && !isCurrent) {
+                    localStorage.removeItem('kfh_my_ticket');
+                    myTicketId = null;
+                }
+            }
+
             const myTicketEl = document.getElementById('my-ticket-num');
             const currentEl = document.getElementById('ticket-current');
             const aheadEl = document.getElementById('ticket-ahead');
@@ -185,7 +196,6 @@
                 const index = state.queue.findIndex(p => String(p.id) === String(myTicketId));
                 if (index !== -1) aheadCount = index;
                 else if (state.current && Number(myTicketId) === Number(state.current.id)) aheadCount = 0;
-                else if (state.current && Number(myTicketId) < Number(state.current.id)) aheadCount = -1;
                 else aheadCount = state.queue.length;
             }
             if (aheadEl) aheadEl.textContent = aheadCount >= 0 ? aheadCount : 0;
@@ -199,8 +209,6 @@
                 if (statusBox) statusBox.innerHTML = '<i class="fa-solid fa-bell ml-2 animate-bounce"></i> دورك الآن! يرجى التوجه إلى العيادة فوراً';
             } else if (aheadCount === 0 && myTicketId) {
                 if (statusBox) statusBox.textContent = 'أنت التالي في الدور! استعد للخدمة قريباً.';
-            } else if (aheadCount < 0) {
-                if (statusBox) statusBox.textContent = 'تمت خدمة تذكرتك مسبقاً. نتمنى لك دوام الصحة والعافية.';
             } else {
                 if (statusBox) statusBox.textContent = `تم حجز تذكرتك بنجاح. يوجد ${aheadCount} مراجعين قبلك في الانتظار.`;
             }
