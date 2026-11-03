@@ -15,15 +15,6 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        hospital: {
-                            blue: '#0284C7',      
-                            darkBlue: '#0369A1',  
-                            lightBlue: '#38BDF8', 
-                            accent: '#0284C7',    
-                            sand: '#F0F9FF',      
-                        }
-                    },
                     fontFamily: {
                         amiri: ['Amiri', 'serif'],
                         tajawal: ['Tajawal', 'sans-serif']
@@ -33,11 +24,7 @@
         }
     </script>
     <style>
-        body {
-            font-family: 'Tajawal', sans-serif;
-            overflow-x: hidden;
-            transition: all 0.3s ease;
-        }
+        body { font-family: 'Tajawal', sans-serif; overflow-x: hidden; transition: all 0.3s ease; }
 
         /* الثيمات الـ 10 بدرجات السماوي والأبيض */
         body.theme-sky { background-color: #F0F9FF; color: #0F172A; }
@@ -95,9 +82,7 @@
             background-size: 30px 30px;
             background-position: 0 0, 15px 15px;
         }
-        .card-shadow {
-            box-shadow: 0 20px 40px -10px rgba(2, 132, 199, 0.12);
-        }
+        .card-shadow { box-shadow: 0 20px 40px -10px rgba(2, 132, 199, 0.12); }
     </style>
 </head>
 <body class="theme-sky pattern-bg min-h-screen flex flex-col justify-between">
@@ -136,7 +121,6 @@
     <!-- Navigation Header -->
     <header class="main-header shadow-2xl py-4 px-8 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
-            
             <div class="flex items-center space-x-4 space-x-reverse">
                 <div class="relative group cursor-pointer" onclick="document.getElementById('logo-upload-input').click()" title="انقر لتغيير الشعار">
                     <img id="display-logo-img" src="https://via.placeholder.com/60" alt="شعار المستشفى" class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-md bg-white">
@@ -151,7 +135,7 @@
                         مُسْتَشْفَى المَلِك فَيْصَل
                     </h1>
                     <span class="text-xs sm:text-sm font-semibold tracking-wider opacity-90 mt-0.5">
-                        King Faisal Hospital
+                        King Faisal Hospital - شاشة العرض العامة
                     </span>
                 </div>
             </div>
@@ -164,20 +148,33 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="max-w-4xl w-full mx-auto px-6 py-8 flex-grow space-y-6 flex flex-col justify-center">
-        <!-- Current Serving Box -->
-        <div class="bg-white rounded-3xl p-8 sm:p-12 border-4 border-sky-300 card-shadow text-center space-y-6 relative overflow-hidden">
-            <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-sky-400 via-sky-600 to-sky-400"></div>
-            
-            <div class="text-sky-900 font-black text-2xl sm:text-3xl flex items-center justify-center gap-3">
-                <i class="fa-solid fa-bullhorn text-sky-600 animate-bounce text-3xl"></i>
-                <span>الرقم الحالي تحت الخدمة</span>
+    <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow space-y-6 flex flex-col justify-center">
+        <!-- العيادتين موحدتين باللون الأزرق/السماوي -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- عيادة 1 (تم توحيد ألوانها بالأزرق السماوي) -->
+            <div class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-sky-400 card-shadow text-center space-y-4 relative overflow-hidden">
+                <div class="absolute top-0 right-0 left-0 h-3 bg-sky-500"></div>
+                <div class="text-sky-900 font-black text-2xl sm:text-3xl flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-bullhorn text-sky-600 animate-bounce"></i>
+                    <span>عيادة رقم 1</span>
+                </div>
+                <div id="disp-clinic1" class="text-8xl sm:text-[9rem] font-black text-sky-900 tracking-tighter py-6 bg-sky-50 rounded-3xl border-2 border-sky-200 shadow-inner">
+                    ---
+                </div>
+                <div class="text-sm font-bold text-slate-500">يرجى التوجه إلى عيادة رقم 1</div>
             </div>
-            
-            <div id="public-current-num" class="text-8xl sm:text-[11rem] font-black text-sky-900 tracking-tighter py-6 bg-sky-50 rounded-3xl border-2 border-sky-200 shadow-inner">---</div>
 
-            <div class="text-base sm:text-lg font-bold text-slate-500">
-                يرجى من المراجع الكريم التوجه إلى العيادة المخصصة فوراً عند النداء.
+            <!-- عيادة 2 -->
+            <div class="bg-white rounded-3xl p-8 sm:p-10 border-4 border-sky-400 card-shadow text-center space-y-4 relative overflow-hidden">
+                <div class="absolute top-0 right-0 left-0 h-3 bg-sky-500"></div>
+                <div class="text-sky-900 font-black text-2xl sm:text-3xl flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-bullhorn text-sky-600 animate-bounce"></i>
+                    <span>عيادة رقم 2</span>
+                </div>
+                <div id="disp-clinic2" class="text-8xl sm:text-[9rem] font-black text-sky-900 tracking-tighter py-6 bg-sky-50 rounded-3xl border-2 border-sky-200 shadow-inner">
+                    ---
+                </div>
+                <div class="text-sm font-bold text-slate-500">يرجى التوجه إلى عيادة رقم 2</div>
             </div>
         </div>
 
@@ -191,8 +188,8 @@
                 <span id="public-queue-count" class="text-xs font-bold text-sky-800 bg-sky-100 border border-sky-200 px-3 py-1 rounded-full">0 مراجعين</span>
             </div>
 
-            <div id="public-queue-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1"></div>
-            <div id="public-empty-msg" class="text-center py-6 text-slate-400 font-bold text-sm">لا يوجد منتظرين حالياً</div>
+            <div id="public-queue-list" class="grid grid-cols-2 sm:grid-cols-6 gap-3 max-h-48 overflow-y-auto p-1"></div>
+            <div id="public-empty-msg" class="text-center py-6 text-slate-400 font-bold text-sm hidden">لا يوجد منتظرين حالياً</div>
         </div>
     </main>
 
@@ -291,7 +288,7 @@
             } catch (e) {}
         }
 
-        function getAudioSequence(num) {
+        function getAudioSequence(num, clinicNum) {
             let files = ['sounds/intro.mp3'];
             if (num >= 1000 && num <= 1500) {
                 let thousands = Math.floor(num / 1000) * 1000;
@@ -337,14 +334,17 @@
             } else if (num >= 1 && num <= 19) {
                 files.push(`sounds/numbers/${num}.mp3`);
             }
+            
+            files.push('sounds/clinic.mp3');
+            files.push(`sounds/numbers/${clinicNum}.mp3`);
             files.push('sounds/outro.mp3');
             return files;
         }
 
-        function announceTicket(ticketNumber) {
+        function announceTicket(ticketNumber, clinicNum) {
             const num = Number(ticketNumber);
             if (isNaN(num) || num < 1) return;
-            const playlist = getAudioSequence(num);
+            const playlist = getAudioSequence(num, clinicNum || 1);
             let index = 0;
             function playNext() {
                 if (index >= playlist.length) return;
@@ -376,13 +376,17 @@
 
         window.renderPublicUI = function(state) {
             if (!state) return;
-            const publicCurrentEl = document.getElementById('public-current-num');
+            const clinic1El = document.getElementById('disp-clinic1');
+            const clinic2El = document.getElementById('disp-clinic2');
             const queueListEl = document.getElementById('public-queue-list');
             const queueCountEl = document.getElementById('public-queue-count');
             const emptyMsgEl = document.getElementById('public-empty-msg');
 
-            const currentStr = (state.current && state.current.id) ? String(state.current.id).padStart(3, '0') : '---';
-            if (publicCurrentEl) publicCurrentEl.textContent = currentStr;
+            const c1Str = (state.clinic1 && state.clinic1.id) ? String(state.clinic1.id).padStart(3, '0') : '---';
+            const c2Str = (state.clinic2 && state.clinic2.id) ? String(state.clinic2.id).padStart(3, '0') : '---';
+            
+            if (clinic1El) clinic1El.textContent = c1Str;
+            if (clinic2El) clinic2El.textContent = c2Str;
             if (queueCountEl) queueCountEl.textContent = `${state.queue ? state.queue.length : 0} مراجعين`;
 
             if (queueListEl) {
@@ -405,7 +409,12 @@
             const localSaved = localStorage.getItem('kfh_queue_state');
             if (localSaved) {
                 const parsed = JSON.parse(localSaved);
-                if (parsed && parsed.state) renderPublicUI(parsed.state);
+                if (parsed && parsed.state) {
+                    if (parsed.state.current && !parsed.state.clinic1) {
+                        parsed.state.clinic1 = parsed.state.current;
+                    }
+                    renderPublicUI(parsed.state);
+                }
             }
         } catch(e) {}
     </script>
@@ -426,7 +435,6 @@
             measurementId: "G-6R34PWFVWK"
         };
 
-        let lastAnnouncedId = null;
         let lastTimestamp = 0;
 
         try {
@@ -441,16 +449,15 @@
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
                         try { localStorage.setItem('kfh_queue_state', JSON.stringify({ state: cloudData.state })); } catch(e) {}
-                        const isNewRecall = cloudData.timestamp && cloudData.timestamp !== lastTimestamp;
-                        const isNewId = cloudData.state.current && cloudData.state.current.id && (lastAnnouncedId !== cloudData.state.current.id);
+                        
+                        const isNewEvent = cloudData.timestamp && cloudData.timestamp !== lastTimestamp;
 
-                        if (cloudData.shouldAnnounce && cloudData.state.current && cloudData.state.current.id) {
-                            if (isNewId || isNewRecall) {
-                                lastAnnouncedId = cloudData.state.current.id;
-                                lastTimestamp = cloudData.timestamp || Date.now();
-                                playChimeAlert();
-                                setTimeout(() => { announceTicket(cloudData.state.current.id); }, 500);
-                            }
+                        if (cloudData.shouldAnnounce && cloudData.announceTicket && isNewEvent) {
+                            lastTimestamp = cloudData.timestamp;
+                            playChimeAlert();
+                            setTimeout(() => { 
+                                announceTicket(cloudData.announceTicket, cloudData.announceClinic || 1); 
+                            }, 500);
                         }
                         renderPublicUI(cloudData.state);
                     }
