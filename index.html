@@ -89,12 +89,36 @@
             box-shadow: 0 20px 40px -10px rgba(2, 132, 199, 0.12);
         }
 
+        /* إعدادات الطباعة المخصصة المانعة لظهور صفحة ثانية فارغة */
         @media print {
-            @page { size: 80mm auto; margin: 0; }
-            body, html { width: 80mm !important; margin: 0 !important; padding: 0 !important; background: white !important; }
-            body * { visibility: hidden; }
-            #receptionPrintBox, #receptionPrintBox * { visibility: visible; }
-            #receptionPrintBox { position: absolute; left: 0; top: 0; width: 80mm !important; display: block !important; background: white; padding: 10px; text-align: center; box-sizing: border-box; }
+            @page { 
+                size: 80mm auto; 
+                margin: 0 !important; 
+            }
+            html, body { 
+                width: 80mm !important; 
+                height: auto !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                background: white !important; 
+                overflow: hidden !important;
+            }
+            body * { visibility: hidden !important; }
+            #receptionPrintBox, #receptionPrintBox * { visibility: visible !important; }
+            #receptionPrintBox { 
+                position: absolute !important; 
+                left: 0 !important; 
+                top: 0 !important; 
+                width: 80mm !important; 
+                display: block !important; 
+                background: white !important; 
+                padding: 5mm !important; 
+                margin: 0 !important;
+                text-align: center !important; 
+                box-sizing: border-box !important; 
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+            }
         }
     </style>
 </head>
@@ -474,10 +498,17 @@
             document.getElementById('printTicketNumber').innerText = String(patientId).padStart(3, '0');
             const now = new Date();
             document.getElementById('printTime').innerText = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+            
             const printBox = document.getElementById('receptionPrintBox');
             printBox.style.display = 'block';
-            window.print();
-            printBox.style.display = 'none';
+            
+            // مهلة زمنية مضاعفة ومضمونة لاستجابة أمر الطباعة دائماً
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => {
+                    printBox.style.display = 'none';
+                }, 300);
+            }, 200);
         };
 
         window.deletePatientTicket = function(patientId) {
@@ -488,14 +519,21 @@
         };
 
         window.printReceptionTicket = function() {
-            const printNum = state.queue.length > 0 ? state.queue[state.queue.length - 1].id : (state.nextId > 1 ? state.nextId - 1 : 1);
-            document.getElementById('printTicketNumber').innerText = String(patientId).padStart(3, '0');
+            const printNum = state.queue.length > 0 ? state.queue[state.queue.length - 1].id : (state.clinic1 ? state.clinic1.id : (state.nextId > 1 ? state.nextId - 1 : 1));
+            document.getElementById('printTicketNumber').innerText = String(printNum).padStart(3, '0');
             const now = new Date();
             document.getElementById('printTime').innerText = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+            
             const printBox = document.getElementById('receptionPrintBox');
             printBox.style.display = 'block';
-            window.print();
-            printBox.style.display = 'none';
+            
+            // مهلة زمنية مضاعفة ومضمونة لاستجابة أمر الطباعة دائماً
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => {
+                    printBox.style.display = 'none';
+                }, 300);
+            }, 200);
         };
 
         window.renderController = function() {
