@@ -6,9 +6,7 @@
     <title>مستشفى الملك فيصل - لوحة الاستقبال</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script>
@@ -154,7 +152,7 @@
                     <div id="popup-tickets-list" class="space-y-2 max-h-48 overflow-y-auto p-1"></div>
                 </div>
                 
-                <!-- زر الإصدار والطباعة الصامتة المدمج -->
+                <!-- زر الإصدار والطباعة الصامتة الآمنة -->
                 <button onclick="issueAndPrintNewPatient()" class="w-full bg-sky-600 hover:bg-sky-700 text-white p-4 rounded-2xl font-black text-base shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-sky-400">
                     <i class="fa-solid fa-print text-sky-200 text-xl"></i><span>إصدار وطباعة تذكرة جديدة 🖨️</span>
                 </button>
@@ -208,6 +206,7 @@
         </div>
     </main>
 
+    <!-- صندوق الطباعة الذي يعرض الوقت فقط -->
     <div id="receptionPrintBox" style="display: none;">
         <div style="font-family: 'Tajawal', sans-serif; text-align: center; width: 100%;">
             <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 2px; color: #000;">مُسْتَشْفَى المَلِك فَيْصَل</h3>
@@ -215,7 +214,8 @@
             <hr style="border: dashed 1px #000; margin-bottom: 10px;">
             <p style="font-size: 13px; color: #000; font-weight: bold;">رقم التذكرة:</p>
             <h1 id="printTicketNumber" style="font-size: 55px; font-weight: 900; margin: 5px 0; color: #000;">--</h1>
-            <p id="printTime" style="font-size: 11px; margin-top: 8px; color: #000;"></p>
+            <!-- يعرض الوقت فقط هنا بدون تاريخ أو جملة إضافية -->
+            <p id="printTime" style="font-size: 13px; font-weight: bold; margin-top: 8px; color: #000;"></p>
             <hr style="border: dashed 1px #000; margin-top: 10px; margin-bottom: 10px;">
             <p style="font-size: 10px; color: #000;">نتمنى لكم دوام الصحة والعافية</p>
         </div>
@@ -225,6 +225,7 @@
         <p>التجمع الصحي © المملكة العربية السعودية - نظام إدارة الطوابير الآلي</p>
     </footer>
 
+    <!-- سكريبت الواجهة والثيمات والوقت -->
     <script>
         window.changeTheme = function(themeName) {
             document.body.className = themeName + " pattern-bg min-h-screen flex flex-col justify-between";
@@ -275,74 +276,6 @@
             } catch (e) {}
         }, 1000);
 
-        let state = { queue: [], clinic1: null, clinic2: null, nextId: 1 };
-        try {
-            const localSaved = localStorage.getItem('kfh_queue_state');
-            if (localSaved) {
-                const parsed = JSON.parse(localSaved);
-                if (parsed && parsed.state) state = parsed.state;
-            }
-        } catch (e) {}
-
-        window.saveAndSync = function() {
-            try { localStorage.setItem('kfh_queue_state', JSON.stringify({ state })); } catch (e) {}
-            
-            if (window.dbInstance && window.docRefInstance) {
-                import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js").then(({ setDoc }) => {
-                    const cleanState = JSON.parse(JSON.stringify(state));
-                    setDoc(window.docRefInstance, { 
-                        state: cleanState, 
-                        shouldAnnounce: false, 
-                        timestamp: Date.now() 
-                    }).catch(() => {});
-                });
-            }
-            renderController();
-        }
-
-        let isPrinting = false;
-
-        // دالة الإصدار والطباعة الصامتة المدمجة عبر Electron
-        window.issueAndPrintNewPatient = function() {
-            if (isPrinting) return;
-
-            const generatedId = state.nextId;
-            const newPatient = { id: generatedId, time: Date.now() };
-            state.queue.push(newPatient);
-            state.nextId++;
-            saveAndSync();
-
-            isPrinting = true;
-            document.getElementById('printTicketNumber').innerText = String(generatedId).padStart(3, '0');
-            const now = new Date();
-            document.getElementById('printTime').innerText = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-            
-            const printBox = document.getElementById('receptionPrintBox');
-            printBox.style.display = 'block';
-            
-            setTimeout(() => {
-                // إرسال أمر الطباعة الصامتة مباشرة لـ Electron
-                if (window.require) {
-                    const { ipcRenderer } = window.require('electron');
-                    ipcRenderer.send('print-ticket-silent');
-                } else {
-                    window.print();
-                }
-
-                setTimeout(() => {
-                    printBox.style.display = 'none';
-                    isPrinting = false;
-                }, 600);
-            }, 300);
-        };
-
-        window.resetQueueSystem = function() {
-            if (confirm('هل أنت متأكد من تصفير النظام وإعادة ضبط الأعداد بالكامل؟')) {
-                state = { queue: [], clinic1: null, clinic2: null, nextId: 1 };
-                saveAndSync();
-            }
-        };
-
         window.toggleManagementMenu = function() {
             const dropdown = document.getElementById('management-dropdown');
             const arrow = document.getElementById('menu-arrow');
@@ -361,12 +294,12 @@
             const countEl = document.getElementById('popup-count');
             if (!listEl) return;
             listEl.innerHTML = '';
-            if (countEl) countEl.textContent = state.queue ? state.queue.length : 0;
-            if (!state.queue || state.queue.length === 0) {
+            if (countEl) countEl.textContent = window.globalState && window.globalState.queue ? window.globalState.queue.length : 0;
+            if (!window.globalState || !window.globalState.queue || window.globalState.queue.length === 0) {
                 listEl.innerHTML = '<div class="text-center text-slate-400 text-xs py-2">لا توجد أرقام متاحة حالياً</div>';
                 return;
             }
-            state.queue.forEach((patient) => {
+            window.globalState.queue.forEach((patient) => {
                 const item = document.createElement('div');
                 item.className = "bg-white border border-sky-200 rounded-xl p-2.5 flex items-center justify-between shadow-2xs";
                 item.innerHTML = `
@@ -384,40 +317,17 @@
             });
         }
 
-        window.printSpecificTicket = function(patientId) {
-            if (isPrinting) return;
-            isPrinting = true;
-            document.getElementById('printTicketNumber').innerText = String(patientId).padStart(3, '0');
-            const now = new Date();
-            document.getElementById('printTime').innerText = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-            
-            const printBox = document.getElementById('receptionPrintBox');
-            printBox.style.display = 'block';
-            
-            setTimeout(() => {
-                if (window.require) {
-                    const { ipcRenderer } = window.require('electron');
-                    ipcRenderer.send('print-ticket-silent');
-                } else {
-                    window.print();
-                }
-
-                setTimeout(() => {
-                    printBox.style.display = 'none';
-                    isPrinting = false;
-                }, 600);
-            }, 300);
-        };
-
         window.deletePatientTicket = function(patientId) {
             if (confirm(`هل أنت متأكد من رغبتك في حذف التذكرة رقم ${String(patientId).padStart(3, '0')}؟`)) {
-                state.queue = state.queue.filter(p => p.id !== patientId);
-                saveAndSync();
+                if (window.deleteTicketTransaction) {
+                    window.deleteTicketTransaction(patientId);
+                }
             }
         };
 
         window.renderController = function() {
             try {
+                const state = window.globalState;
                 const clinic1El = document.getElementById('ctrl-clinic1-num');
                 const clinic2El = document.getElementById('ctrl-clinic2-num');
                 const queueListEl = document.getElementById('ctrl-queue-list');
@@ -452,15 +362,13 @@
                 if (dropdown && !dropdown.classList.contains('hidden')) renderPopupManagementList();
             } catch (e) {}
         }
-
-        window.addEventListener('load', () => { renderController(); });
     </script>
 
-    <!-- Firebase Realtime Sync -->
+    <!-- Firebase Realtime Sync & Secure Transactions -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, runTransaction, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBtLu7ICGKWJDHIuPBM4h1cZmkDsxjylxo",
@@ -472,23 +380,121 @@
             measurementId: "G-6R34PWFVWK"
         };
 
+        let db, docRef;
+        window.globalState = { queue: [], clinic1: null, clinic2: null, nextId: 1 };
+        let isPrinting = false;
+
+        // دالة الطباعة الموحدة لإظهار الوقت فقط
+        window.triggerPrintJob = function(ticketId) {
+            if (isPrinting) return;
+            isPrinting = true;
+            document.getElementById('printTicketNumber').innerText = String(ticketId).padStart(3, '0');
+            
+            // استخراج الوقت المحلي فقط بصيغة ساعات:دقائق:ثوانٍ
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('printTime').innerText = timeString;
+            
+            const printBox = document.getElementById('receptionPrintBox');
+            printBox.style.display = 'block';
+            
+            setTimeout(() => {
+                if (window.require) {
+                    const { ipcRenderer } = window.require('electron');
+                    ipcRenderer.send('print-ticket-silent');
+                } else {
+                    window.print();
+                }
+
+                setTimeout(() => {
+                    printBox.style.display = 'none';
+                    isPrinting = false;
+                }, 600);
+            }, 300);
+        }
+
+        window.printSpecificTicket = function(patientId) {
+            window.triggerPrintJob(patientId);
+        };
+
         try {
             const app = initializeApp(firebaseConfig);
-            window.dbInstance = getFirestore(app);
+            db = getFirestore(app);
             const auth = getAuth(app);
             signInAnonymously(auth).catch(() => {});
+            docRef = doc(db, "queues", "hospital_main_queue");
 
-            window.docRefInstance = doc(window.dbInstance, "queues", "hospital_main_queue");
-            onSnapshot(window.docRefInstance, (docSnap) => {
+            // الإصدار الآمن عبر المعاملات (يمنع رجوع العدادات للخلف نهائياً)
+            window.issueAndPrintNewPatient = async function() {
+                if (isPrinting) return;
+
+                try {
+                    let assignedId = 1;
+                    await runTransaction(db, async (transaction) => {
+                        const docSnap = await transaction.get(docRef);
+                        let state = { queue: [], clinic1: null, clinic2: null, nextId: 1 };
+                        if (docSnap.exists() && docSnap.data().state) {
+                            state = docSnap.data().state;
+                        }
+
+                        assignedId = Number(state.nextId || 1);
+                        if (!state.queue) state.queue = [];
+                        
+                        state.queue.push({ id: assignedId, time: Date.now() });
+                        state.nextId = assignedId + 1;
+
+                        window.globalState = state;
+                        transaction.set(docRef, { state, shouldAnnounce: false, timestamp: Date.now() });
+                    });
+
+                    window.triggerPrintJob(assignedId);
+
+                } catch (e) {
+                    console.error("Transaction failed: ", e);
+                    alert("حدث خطأ أثناء إصدار التذكرة، يرجى المحاولة مرة أخرى.");
+                }
+            };
+
+            window.deleteTicketTransaction = async function(patientId) {
+                try {
+                    await runTransaction(db, async (transaction) => {
+                        const docSnap = await transaction.get(docRef);
+                        if (!docSnap.exists()) return;
+                        let state = docSnap.data().state;
+                        if (state && state.queue) {
+                            state.queue = state.queue.filter(p => p.id !== patientId);
+                            window.globalState = state;
+                            transaction.set(docRef, { state, shouldAnnounce: false, timestamp: Date.now() });
+                        }
+                    });
+                } catch (e) {
+                    alert("فشل حذف التذكرة.");
+                }
+            };
+
+            window.resetQueueSystem = async function() {
+                if (confirm('هل أنت متأكد من تصفير النظام وإعادة ضبط الأعداد بالكامل؟')) {
+                    try {
+                        await runTransaction(db, async (transaction) => {
+                            const newState = { queue: [], clinic1: null, clinic2: null, nextId: 1 };
+                            transaction.set(docRef, { state: newState, shouldAnnounce: false, timestamp: Date.now() });
+                        });
+                        alert("تم تصفير النظام بنجاح.");
+                    } catch (e) {
+                        alert("فشل تصفير النظام.");
+                    }
+                }
+            };
+
+            onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
                     if (cloudData && cloudData.state) {
-                        state = cloudData.state;
-                        try { localStorage.setItem('kfh_queue_state', JSON.stringify({ state })); } catch(e) {}
-                        if (typeof window.renderController === 'function') window.renderController();
+                        window.globalState = cloudData.state;
+                        window.renderController();
                     }
                 }
-            }, () => {});
+            });
         } catch (e) {}
     </script>
 </body>
