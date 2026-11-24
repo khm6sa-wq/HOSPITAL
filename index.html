@@ -182,6 +182,7 @@
         </div>
 
         <div class="space-y-6 md:col-span-2">
+            <!-- بطاقات العيادات: تعرض الرقم فقط دون الاسم -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div class="bg-white rounded-3xl p-6 border-4 border-sky-400 card-shadow text-center space-y-2 relative overflow-hidden">
                     <div class="absolute top-0 right-0 left-0 h-3 bg-sky-500"></div>
@@ -200,7 +201,7 @@
                     <div class="flex items-center gap-3"><div class="w-4 h-4 rounded-full bg-sky-500"></div><h2 class="text-lg font-black text-sky-900">قائمة الانتظار النشطة</h2></div>
                     <span id="ctrl-queue-counter" class="text-xs font-bold text-sky-800 bg-sky-100 border border-sky-200 px-3 py-1 rounded-full">0 مراجعين</span>
                 </div>
-                <div id="ctrl-queue-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-60 overflow-y-auto p-1"></div>
+                <div id="ctrl-queue-list" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-60 overflow-y-auto p-1"></div>
                 <div id="ctrl-empty-msg" class="text-center py-6 text-slate-400 font-bold hidden">لا يوجد مراجعين في الانتظار حالياً</div>
             </div>
         </div>
@@ -214,7 +215,6 @@
             <hr style="border: dashed 1px #000; margin-bottom: 10px;">
             <p style="font-size: 13px; color: #000; font-weight: bold;">رقم التذكرة:</p>
             <h1 id="printTicketNumber" style="font-size: 55px; font-weight: 900; margin: 5px 0; color: #000;">--</h1>
-            <!-- يعرض الوقت فقط هنا بدون تاريخ أو جملة إضافية -->
             <p id="printTime" style="font-size: 13px; font-weight: bold; margin-top: 8px; color: #000;"></p>
             <hr style="border: dashed 1px #000; margin-top: 10px; margin-bottom: 10px;">
             <p style="font-size: 10px; color: #000;">نتمنى لكم دوام الصحة والعافية</p>
@@ -294,17 +294,22 @@
             const countEl = document.getElementById('popup-count');
             if (!listEl) return;
             listEl.innerHTML = '';
-            if (countEl) countEl.textContent = window.globalState && window.globalState.queue ? window.globalState.queue.length : 0;
-            if (!window.globalState || !window.globalState.queue || window.globalState.queue.length === 0) {
+            const queue = (window.globalState && window.globalState.queue) ? window.globalState.queue : [];
+            if (countEl) countEl.textContent = queue.length;
+            if (queue.length === 0) {
                 listEl.innerHTML = '<div class="text-center text-slate-400 text-xs py-2">لا توجد أرقام متاحة حالياً</div>';
                 return;
             }
-            window.globalState.queue.forEach((patient) => {
+            queue.forEach((patient) => {
+                const patientName = patient.name ? patient.name : 'مراجع استقبال';
                 const item = document.createElement('div');
-                item.className = "bg-white border border-sky-200 rounded-xl p-2.5 flex items-center justify-between shadow-2xs";
+                item.className = "bg-white border border-sky-200 rounded-xl p-2.5 flex items-center justify-between shadow-2xs gap-2";
                 item.innerHTML = `
-                    <span class="text-sm font-black text-sky-900">${String(patient.id).padStart(3, '0')}</span>
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex flex-col overflow-hidden text-right">
+                        <span class="text-sm font-black text-sky-900">${String(patient.id).padStart(3, '0')}</span>
+                        <span class="text-[11px] font-bold text-slate-600 truncate" title="${patientName}">${patientName}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
                         <button onclick="printSpecificTicket(${patient.id})" class="bg-sky-600 hover:bg-sky-700 text-white text-[11px] px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1">
                             <i class="fa-solid fa-print text-[10px]"></i> طباعة
                         </button>
@@ -351,9 +356,18 @@
                     } else {
                         if (emptyMsgEl) emptyMsgEl.classList.add('hidden');
                         state.queue.forEach((patient) => {
+                            const patientName = patient.name ? patient.name : 'مراجع استقبال';
                             const box = document.createElement('div');
-                            box.className = "bg-sky-50 border border-sky-200 rounded-xl p-3 text-center shadow-xs flex items-center justify-between px-4";
-                            box.innerHTML = `<span class="text-xl font-black text-sky-900">${String(patient.id).padStart(3, '0')}</span><span class="text-[10px] text-slate-400 font-bold">انتظار</span>`;
+                            box.className = "bg-sky-50 border border-sky-200 rounded-xl p-3 shadow-xs flex flex-col justify-between gap-1";
+                            box.innerHTML = `
+                                <div class="flex items-center justify-between w-full">
+                                    <span class="text-xl font-black text-sky-900">${String(patient.id).padStart(3, '0')}</span>
+                                    <span class="text-[10px] text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full font-bold">انتظار</span>
+                                </div>
+                                <div class="text-xs font-bold text-slate-700 truncate text-right border-t border-sky-200/60 pt-1 mt-1" title="${patientName}">
+                                    <i class="fa-solid fa-user text-[10px] text-sky-500 ml-1"></i>${patientName}
+                                </div>
+                            `;
                             queueListEl.appendChild(box);
                         });
                     }
@@ -390,7 +404,6 @@
             isPrinting = true;
             document.getElementById('printTicketNumber').innerText = String(ticketId).padStart(3, '0');
             
-            // استخراج الوقت المحلي فقط بصيغة ساعات:دقائق:ثوانٍ
             const now = new Date();
             const timeString = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             document.getElementById('printTime').innerText = timeString;
@@ -424,7 +437,7 @@
             signInAnonymously(auth).catch(() => {});
             docRef = doc(db, "queues", "hospital_main_queue");
 
-            // الإصدار الآمن عبر المعاملات (يمنع رجوع العدادات للخلف نهائياً)
+            // الإصدار الآمن عبر المعاملات
             window.issueAndPrintNewPatient = async function() {
                 if (isPrinting) return;
 
